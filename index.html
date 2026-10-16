@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="IronOS" />
   <meta name="theme-color" content="#090d16" />
-  <title>IronOS — Gym & Hypertrophy Tracker</title>
+  <title>IronOS — Gym Tracker</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -27,7 +27,7 @@
     }
     input, textarea, select {
       user-select: text;
-      font-size: 16px !important; /* Impedisce lo zoom automatico su iOS Safari */
+      font-size: 16px !important;
     }
     body {
       background-color: #090d16;
@@ -36,15 +36,6 @@
       overscroll-behavior-y: none;
       padding-top: max(12px, var(--sat));
       padding-bottom: calc(88px + var(--sab));
-    }
-    /* Rimozione frecce input number */
-    input::-webkit-outer-spin-button,
-    input::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-    input[type=number] {
-      -moz-appearance: textfield;
     }
     .ios-blur {
       backdrop-filter: blur(20px);
@@ -56,13 +47,6 @@
     .no-scrollbar {
       -ms-overflow-style: none;
       scrollbar-width: none;
-    }
-    @keyframes pulse-border {
-      0%, 100% { border-color: rgba(16, 185, 129, 0.5); }
-      50% { border-color: rgba(16, 185, 129, 1); }
-    }
-    .live-border {
-      animation: pulse-border 2s infinite;
     }
   </style>
 </head>
@@ -86,22 +70,22 @@
         </div>
       </div>
 
-      <!-- Controlli Cronometro Sessione (NO AUTO-START) -->
+      <!-- Orario Inizio & Pulsante Salva -->
       <div class="flex items-center gap-2">
         <div class="flex items-center bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1.5 gap-2">
-          <button onclick="toggleWorkoutTimer()" id="timerToggleBtn" class="w-7 h-7 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center transition active:scale-95" title="Avvia/Pausa Allenamento">
-            <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i>
+          <button type="button" onclick="markOrResetStartTime()" class="text-left flex items-center gap-1.5 active:scale-95 transition">
+            <i data-lucide="clock" class="w-3.5 h-3.5 text-blue-400"></i>
+            <div>
+              <div class="text-[9px] uppercase tracking-wider text-slate-400 font-semibold leading-none">Inizio</div>
+              <div id="startTimeDisplay" class="text-xs font-mono font-bold text-slate-400 leading-tight mt-0.5">Tocca</div>
+            </div>
           </button>
-          <div class="text-right min-w-[54px]">
-            <div class="text-[9px] uppercase tracking-wider text-slate-400 font-semibold leading-none">Durata</div>
-            <div id="workoutTimerDisplay" class="text-sm font-mono font-bold text-slate-200 leading-tight">00:00</div>
-          </div>
-          <button onclick="resetWorkoutTimer()" id="timerResetBtn" class="text-slate-500 hover:text-slate-300 p-1 hidden" title="Azzera timer">
+          <button type="button" onclick="clearStartTime()" id="clearStartTimeBtn" class="text-slate-500 hover:text-slate-300 p-0.5 hidden">
             <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
           </button>
         </div>
 
-        <button onclick="finishWorkout()" class="bg-blue-600 hover:bg-blue-500 active:scale-95 transition text-white font-semibold text-xs px-3.5 py-2.5 rounded-xl shadow-lg shadow-blue-600/25 flex items-center gap-1.5">
+        <button type="button" onclick="finishWorkout()" class="bg-blue-600 hover:bg-blue-500 active:scale-95 transition text-white font-semibold text-xs px-3.5 py-2.5 rounded-xl shadow-lg shadow-blue-600/25 flex items-center gap-1.5">
           <i data-lucide="check-circle-2" class="w-4 h-4"></i>
           <span>Salva</span>
         </button>
@@ -115,70 +99,64 @@
     <!-- ==================== TAB 1: WORKOUT LOGGER ==================== -->
     <section id="tab-workout" class="space-y-4">
 
-      <!-- Selettore Schede Rapido + Bottone Gestione -->
+      <!-- Selettore Schede Rapido -->
       <div class="space-y-2">
         <div class="flex items-center justify-between">
           <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Scheda Attiva</span>
-          <button onclick="openRoutineManagerModal()" class="text-xs font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-1">
+          <button type="button" onclick="openRoutineManagerModal()" class="text-xs font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-1">
             <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i>
             Gestisci / Modifica Schede
           </button>
         </div>
-        <div id="routinePillsContainer" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-          <!-- Generato via JS -->
-        </div>
+        <div id="routinePillsContainer" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1"></div>
       </div>
 
-      <!-- Riepilogo Live Sessione -->
-      <div class="grid grid-cols-3 gap-2.5">
-        <div class="bg-slate-900/90 border border-slate-800/90 rounded-2xl p-3">
-          <div class="text-[11px] text-slate-400 font-medium">Volume Totale</div>
-          <div class="text-lg font-bold text-white mt-0.5"><span id="liveVolume">0</span> <span class="text-xs font-normal text-slate-400">kg</span></div>
-        </div>
-        <div class="bg-slate-900/90 border border-slate-800/90 rounded-2xl p-3">
-          <div class="text-[11px] text-slate-400 font-medium">Serie Completate</div>
-          <div class="text-lg font-bold text-emerald-400 mt-0.5"><span id="liveSets">0</span><span id="liveTotalSets" class="text-xs font-normal text-slate-500">/0</span></div>
-        </div>
-        <div class="bg-slate-900/90 border border-slate-800/90 rounded-2xl p-3 flex flex-col justify-between">
-          <div class="text-[11px] text-slate-400 font-medium flex items-center justify-between">
-            <span>Recupero Auto</span>
-            <input type="checkbox" id="autoRestToggle" checked onchange="toggleAutoRestSetting(this.checked)" class="accent-blue-500 w-3.5 h-3.5 rounded" />
+      <!-- Riepilogo Live Sessione (Senza Recupero) -->
+      <div class="grid grid-cols-2 gap-2.5">
+        <div class="bg-slate-900/90 border border-slate-800/90 rounded-2xl p-3.5 flex items-center justify-between">
+          <div>
+            <div class="text-[11px] text-slate-400 font-medium">Volume Sessione</div>
+            <div class="text-lg font-bold text-white mt-0.5"><span id="liveVolume">0</span> <span class="text-xs font-normal text-slate-400">kg</span></div>
           </div>
-          <select id="defaultRestSelect" onchange="updateDefaultRest(this.value)" class="bg-transparent text-sm font-bold text-blue-400 focus:outline-none mt-0.5">
-            <option value="60" class="bg-slate-900 text-white">60 sec</option>
-            <option value="90" selected class="bg-slate-900 text-white">90 sec</option>
-            <option value="120" class="bg-slate-900 text-white">120 sec (2m)</option>
-            <option value="180" class="bg-slate-900 text-white">180 sec (3m)</option>
-          </select>
+          <div class="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+            <i data-lucide="weight" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="bg-slate-900/90 border border-slate-800/90 rounded-2xl p-3.5 flex items-center justify-between">
+          <div>
+            <div class="text-[11px] text-slate-400 font-medium">Serie Completate</div>
+            <div class="text-lg font-bold text-emerald-400 mt-0.5"><span id="liveSets">0</span><span id="liveTotalSets" class="text-xs font-normal text-slate-500">/0</span></div>
+          </div>
+          <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+            <i data-lucide="check-check" class="w-4 h-4"></i>
+          </div>
         </div>
       </div>
 
       <!-- Note Sessione -->
       <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl px-3.5 py-2.5 flex items-center gap-2.5">
         <i data-lucide="file-text" class="w-4 h-4 text-slate-400 shrink-0"></i>
-        <input id="workoutNoteInput" type="text" oninput="saveActiveWorkoutState()" placeholder="Note sessione (es. Energia alta, focus fermo al petto...)" class="w-full bg-transparent text-xs text-slate-200 placeholder-slate-500 focus:outline-none" />
+        <input id="workoutNoteInput" type="text" oninput="saveActiveWorkoutState()" placeholder="Note sessione (es. Panca pesante, ottimo focus...)" class="w-full bg-transparent text-xs text-slate-200 placeholder-slate-500 focus:outline-none" />
       </div>
 
       <!-- Lista Esercizi della Sessione -->
-      <div id="workoutExercisesContainer" class="space-y-4">
-        <!-- Esercizi renderizzati via JS -->
-      </div>
+      <div id="workoutExercisesContainer" class="space-y-4"></div>
 
       <!-- Pulsanti Azione Fondo Scheda -->
       <div class="pt-2 space-y-2.5">
-        <button onclick="openExercisePicker('workout')" class="w-full py-3.5 rounded-2xl border border-dashed border-blue-500/50 bg-blue-500/10 hover:bg-blue-500/15 active:scale-[0.99] transition text-blue-400 font-semibold text-sm flex items-center justify-center gap-2">
+        <button type="button" onclick="openExercisePicker('workout')" class="w-full py-3.5 rounded-2xl border border-dashed border-blue-500/50 bg-blue-500/10 hover:bg-blue-500/15 active:scale-[0.99] transition text-blue-400 font-semibold text-sm flex items-center justify-center gap-2">
           <i data-lucide="plus-circle" class="w-4 h-4"></i>
-          Aggiungi Esercizio alla Sessione
+          Aggiungi Esercizio
         </button>
 
         <div class="grid grid-cols-2 gap-2.5">
-          <button onclick="saveCurrentWorkoutAsRoutine()" class="py-2.5 px-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 text-xs font-medium flex items-center justify-center gap-1.5 active:scale-95 transition">
-            <i data-lucide="bookmark-plus" class="w-3.5 h-3.5 text-indigo-400"></i>
-            Salva come Scheda
+          <button type="button" onclick="openRoutineManagerModal()" class="py-2.5 px-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 text-xs font-medium flex items-center justify-center gap-1.5 active:scale-95 transition">
+            <i data-lucide="folder-plus" class="w-3.5 h-3.5 text-indigo-400"></i>
+            Crea / Modifica Schede
           </button>
-          <button onclick="clearCurrentWorkout()" class="py-2.5 px-3 rounded-xl bg-slate-900 border border-slate-800 text-rose-400/90 text-xs font-medium flex items-center justify-center gap-1.5 active:scale-95 transition">
-            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-            Svuota Sessione
+          <button type="button" onclick="resetCurrentSessionValues()" class="py-2.5 px-3 rounded-xl bg-slate-900 border border-slate-800 text-rose-400/90 text-xs font-medium flex items-center justify-center gap-1.5 active:scale-95 transition">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+            Togli Spunte Serie
           </button>
         </div>
       </div>
@@ -189,44 +167,62 @@
       <div class="flex items-center justify-between">
         <div>
           <h2 class="text-lg font-bold text-white">Storico Allenamenti</h2>
-          <p class="text-xs text-slate-400">Tutte le sessioni completate e salvate sul tuo iPhone</p>
+          <p class="text-xs text-slate-400">Sessioni salvate con orario d'inizio e fine</p>
         </div>
         <span id="historyCountBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-800 text-slate-300">0 sessioni</span>
       </div>
 
-      <div id="historyListContainer" class="space-y-3">
-        <!-- Popolato da JS -->
-      </div>
+      <div id="historyListContainer" class="space-y-3"></div>
     </section>
 
     <!-- ==================== TAB 3: ANALISI & GRAFICI ==================== -->
     <section id="tab-analytics" class="hidden space-y-4">
       <div>
-        <h2 class="text-lg font-bold text-white">Analisi & Progressione</h2>
-        <p class="text-xs text-slate-400">Monitoraggio 1RM stimato (Epley) e Tonnellaggio</p>
+        <h2 class="text-lg font-bold text-white">Progressione Forza & Reps</h2>
+        <p class="text-xs text-slate-400">Confronto tra Carico sollevato (Kg), Ripetizioni e Serie</p>
       </div>
 
-      <!-- Card progressione 1RM per esercizio -->
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+      <!-- Selettore Esercizio + Grafico Combinato -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3.5">
         <div class="flex items-center justify-between gap-2">
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Progressione Forza (1RM & Max Kg)</span>
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Seleziona Esercizio</span>
         </div>
+
         <select id="analyticsExerciseSelect" onchange="renderAnalyticsCharts()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white font-medium focus:outline-none focus:border-blue-500">
-          <!-- Popolato da JS -->
         </select>
-        <div class="h-56 w-full">
+
+        <!-- Legenda Rapida Esplicativa -->
+        <div class="grid grid-cols-2 gap-2 text-[11px] bg-slate-950/70 border border-slate-800/80 rounded-xl p-2.5">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-1 bg-emerald-400 rounded-full inline-block"></span>
+            <span class="text-slate-300"><strong>Linea Verde:</strong> Carico Max (Kg)</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-1 bg-blue-400 rounded-full inline-block"></span>
+            <span class="text-slate-300"><strong>Tratteggio Blu:</strong> 1RM Stimato</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-2.5 bg-indigo-500/60 rounded-sm inline-block"></span>
+            <span class="text-slate-300"><strong>Barre Viola:</strong> Reps sul Carico Max</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-2.5 bg-amber-500/50 rounded-sm inline-block"></span>
+            <span class="text-slate-300"><strong>Barre Ambra:</strong> N° Serie fatte</span>
+          </div>
+        </div>
+
+        <div class="h-64 w-full relative">
           <canvas id="strengthChart"></canvas>
         </div>
       </div>
 
-      <!-- Card Volume per Sessione -->
+      <!-- Registro Variazioni -->
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Volume Totale ultime sessioni (Kg)</span>
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Dettaglio Variazioni Sessioni</span>
+          <span class="text-[10px] text-slate-500">Confronto con prec.</span>
         </div>
-        <div class="h-48 w-full">
-          <canvas id="volumeChart"></canvas>
-        </div>
+        <div id="progressionBreakdownList" class="space-y-2"></div>
       </div>
     </section>
 
@@ -237,7 +233,7 @@
         <p class="text-xs text-slate-400">Esporta i tuoi dati su iOS o personalizza l'archivio</p>
       </div>
 
-      <!-- Gestione Schede da Impostazioni -->
+      <!-- Gestione Schede -->
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
@@ -248,7 +244,7 @@
             <p class="text-xs text-slate-400">Crea nuove schede, aggiungi esercizi o cambia l'ordine</p>
           </div>
         </div>
-        <button onclick="openRoutineManagerModal()" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition">
+        <button type="button" onclick="openRoutineManagerModal()" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition">
           Apri Gestione Schede
         </button>
       </div>
@@ -261,11 +257,11 @@
         </h3>
         <p class="text-xs text-slate-400">Scarica un file CSV apribile con Excel / Numbers su iPhone o fai un backup completo JSON.</p>
         <div class="grid grid-cols-2 gap-2.5">
-          <button onclick="exportCSV()" class="py-2.5 px-3 rounded-xl bg-emerald-600/20 border border-emerald-500/30 text-emerald-300 font-semibold text-xs flex items-center justify-center gap-1.5">
+          <button type="button" onclick="exportCSV()" class="py-2.5 px-3 rounded-xl bg-emerald-600/20 border border-emerald-500/30 text-emerald-300 font-semibold text-xs flex items-center justify-center gap-1.5">
             <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
             Esporta CSV
           </button>
-          <button onclick="exportJSON()" class="py-2.5 px-3 rounded-xl bg-blue-600/20 border border-blue-500/30 text-blue-300 font-semibold text-xs flex items-center justify-center gap-1.5">
+          <button type="button" onclick="exportJSON()" class="py-2.5 px-3 rounded-xl bg-blue-600/20 border border-blue-500/30 text-blue-300 font-semibold text-xs flex items-center justify-center gap-1.5">
             <i data-lucide="file-json" class="w-4 h-4"></i>
             Backup JSON
           </button>
@@ -287,7 +283,7 @@
           <i data-lucide="alert-triangle" class="w-4 h-4"></i>
           Zona Pericolo
         </h3>
-        <button onclick="factoryReset()" class="w-full py-2.5 rounded-xl bg-rose-600/15 border border-rose-500/30 text-rose-400 font-semibold text-xs">
+        <button type="button" onclick="askFactoryReset()" class="w-full py-2.5 rounded-xl bg-rose-600/15 border border-rose-500/30 text-rose-400 font-semibold text-xs">
           Ripristina Dati di Fabbrica
         </button>
       </div>
@@ -295,145 +291,103 @@
 
   </main>
 
-  <!-- FLOATING REST TIMER BAR (Sopra la tabbar) -->
-  <div id="restTimerBar" class="fixed left-3 right-3 bottom-[76px] z-40 max-w-lg mx-auto hidden">
-    <div class="bg-slate-900/95 ios-blur border border-blue-500/40 rounded-2xl p-3 shadow-2xl shadow-black/80 flex items-center justify-between gap-3">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400">
-          <i data-lucide="timer" class="w-5 h-5"></i>
-        </div>
-        <div>
-          <div class="text-[10px] font-semibold uppercase tracking-wider text-blue-400">Recupero in corso</div>
-          <div id="restTimerCountdown" class="text-xl font-mono font-bold text-white leading-none mt-0.5">01:30</div>
-        </div>
-      </div>
-      <div class="flex items-center gap-1.5">
-        <button onclick="adjustRestTimer(-15)" class="px-2.5 py-1.5 rounded-lg bg-slate-800 text-xs font-semibold text-slate-300 active:scale-95">-15s</button>
-        <button onclick="adjustRestTimer(15)" class="px-2.5 py-1.5 rounded-lg bg-slate-800 text-xs font-semibold text-slate-300 active:scale-95">+15s</button>
-        <button onclick="stopRestTimer()" class="p-2 rounded-lg bg-rose-500/20 text-rose-400 active:scale-95" title="Salta recupero">
-          <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- BOTTOM NAVIGATION BAR (iOS Style) -->
+  <!-- BOTTOM NAVIGATION BAR -->
   <nav class="fixed bottom-0 left-0 right-0 z-30 bg-[#090d16]/95 ios-blur border-t border-slate-800/80" style="padding-bottom: var(--sab);">
     <div class="max-w-lg mx-auto grid grid-cols-4 h-16">
-      <button onclick="switchTab('workout')" id="nav-workout" class="flex flex-col items-center justify-center gap-1 text-blue-400">
+      <button type="button" onclick="switchTab('workout')" id="nav-workout" class="flex flex-col items-center justify-center gap-1 text-blue-400">
         <i data-lucide="dumbbell" class="w-5 h-5"></i>
         <span class="text-[10px] font-semibold">Allenamento</span>
       </button>
-      <button onclick="switchTab('history')" id="nav-history" class="flex flex-col items-center justify-center gap-1 text-slate-400">
+      <button type="button" onclick="switchTab('history')" id="nav-history" class="flex flex-col items-center justify-center gap-1 text-slate-400">
         <i data-lucide="calendar-clock" class="w-5 h-5"></i>
         <span class="text-[10px] font-semibold">Storico</span>
       </button>
-      <button onclick="switchTab('analytics')" id="nav-analytics" class="flex flex-col items-center justify-center gap-1 text-slate-400">
+      <button type="button" onclick="switchTab('analytics')" id="nav-analytics" class="flex flex-col items-center justify-center gap-1 text-slate-400">
         <i data-lucide="line-chart" class="w-5 h-5"></i>
         <span class="text-[10px] font-semibold">Progressi</span>
       </button>
-      <button onclick="switchTab('settings')" id="nav-settings" class="flex flex-col items-center justify-center gap-1 text-slate-400">
+      <button type="button" onclick="switchTab('settings')" id="nav-settings" class="flex flex-col items-center justify-center gap-1 text-slate-400">
         <i data-lucide="settings" class="w-5 h-5"></i>
         <span class="text-[10px] font-semibold">Opzioni</span>
       </button>
     </div>
   </nav>
 
-  <!-- ========================================================================= -->
-  <!-- MODALE 1: GESTIONE & MODIFICA SCHEDE (Z-INDEX 60)                         -->
-  <!-- ========================================================================= -->
+  <!-- MODALE 1: GESTIONE & MODIFICA SCHEDE (Z-INDEX 60) -->
   <div id="routineManagerModal" class="fixed inset-0 z-[60] bg-black/80 ios-blur hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-slate-900 border-t sm:border border-slate-800 rounded-t-3xl sm:rounded-3xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden">
-      <!-- Header Modale -->
       <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
         <div>
           <h3 class="text-base font-bold text-white">Gestione Schede</h3>
-          <p class="text-xs text-slate-400">Seleziona una scheda per modificarne gli esercizi o creane una nuova</p>
+          <p class="text-xs text-slate-400">Modifica gli esercizi della scheda o creane una nuova</p>
         </div>
-        <button onclick="closeRoutineManagerModal()" class="p-2 rounded-full bg-slate-800 text-slate-400 hover:text-white">
+        <button type="button" onclick="closeRoutineManagerModal()" class="p-2 rounded-full bg-slate-800 text-slate-400 hover:text-white">
           <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>
 
-      <!-- Corpo Modale -->
       <div class="p-4 overflow-y-auto space-y-4 flex-1">
-        <!-- Selettore Scheda da Modificare + Nuova Scheda -->
         <div class="flex items-center gap-2">
           <select id="editorRoutineSelect" onchange="loadRoutineIntoEditor(this.value)" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm font-semibold text-white focus:outline-none focus:border-blue-500">
-            <!-- Popolato da JS -->
           </select>
-          <button onclick="createNewRoutineInEditor()" class="px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1 shrink-0">
+          <button type="button" onclick="createNewRoutineInEditor()" class="px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1 shrink-0">
             <i data-lucide="plus" class="w-4 h-4"></i>
             Nuova
           </button>
         </div>
 
-        <!-- Nome Scheda -->
         <div>
           <label class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Nome della Scheda</label>
           <div class="flex items-center gap-2 mt-1">
             <input type="text" id="editorRoutineNameInput" oninput="updateEditorRoutineName(this.value)" placeholder="Es. Upper Body A" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white font-medium focus:outline-none focus:border-blue-500" />
-            <button onclick="deleteRoutineFromEditor()" class="p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400" title="Elimina scheda">
+            <button type="button" onclick="deleteRoutineFromEditor()" class="p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400" title="Elimina scheda">
               <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>
           </div>
         </div>
 
-        <!-- Lista Esercizi nella Scheda -->
         <div class="space-y-2">
           <div class="flex items-center justify-between">
             <label class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Esercizi nella Scheda</label>
             <span id="editorExerciseCount" class="text-xs text-slate-400">0 esercizi</span>
           </div>
-          <div id="editorExercisesList" class="space-y-2">
-            <!-- Popolato via JS -->
-          </div>
+          <div id="editorExercisesList" class="space-y-2"></div>
         </div>
 
-        <!-- Bottone per aggiungere esercizio alla scheda (Apre il Picker sopra questo modale con z-[90]) -->
-        <button onclick="openExercisePicker('routineEditor')" class="w-full py-3 rounded-xl border border-dashed border-blue-500/50 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 font-semibold text-xs flex items-center justify-center gap-2">
+        <button type="button" onclick="openExercisePicker('routineEditor')" class="w-full py-3 rounded-xl border border-dashed border-blue-500/50 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 font-semibold text-xs flex items-center justify-center gap-2">
           <i data-lucide="plus-circle" class="w-4 h-4"></i>
           Aggiungi Esercizio a questa Scheda
         </button>
       </div>
 
-      <!-- Footer Modale -->
       <div class="p-4 border-t border-slate-800 bg-slate-950/60 flex items-center gap-2.5">
-        <button onclick="closeRoutineManagerModal()" class="flex-1 py-3 rounded-xl bg-slate-800 text-slate-200 font-semibold text-xs">
-          Chiudi
-        </button>
-        <button onclick="applyEditedRoutineToLiveWorkout()" class="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs flex items-center justify-center gap-1.5">
+        <button type="button" onclick="applyEditedRoutineToLiveWorkout()" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs flex items-center justify-center gap-1.5">
           <i data-lucide="check" class="w-4 h-4"></i>
-          Salva e Carica Ora
+          Applica e Torna all'Allenamento
         </button>
       </div>
     </div>
   </div>
 
-  <!-- ========================================================================= -->
-  <!-- MODALE 2: SELETTORE ESERCIZI (Z-INDEX 90 - Sta sempre SOPRA tutto)        -->
-  <!-- ========================================================================= -->
+  <!-- MODALE 2: SELETTORE ESERCIZI (Z-INDEX 90) -->
   <div id="exercisePickerModal" class="fixed inset-0 z-[90] bg-black/85 ios-blur hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-slate-900 border-t sm:border border-slate-800 rounded-t-3xl sm:rounded-3xl w-full max-w-lg max-h-[88vh] flex flex-col overflow-hidden shadow-2xl">
-      <!-- Header -->
       <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
         <div>
           <h3 class="text-base font-bold text-white">Scegli Esercizio</h3>
-          <p id="pickerTargetSubtitle" class="text-xs text-blue-400">Aggiungi alla sessione</p>
+          <p id="pickerTargetSubtitle" class="text-xs text-blue-400">Aggiungi alla scheda</p>
         </div>
-        <button onclick="closeExercisePicker()" class="p-2 rounded-full bg-slate-800 text-slate-400 hover:text-white">
+        <button type="button" onclick="closeExercisePicker()" class="p-2 rounded-full bg-slate-800 text-slate-400 hover:text-white">
           <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>
 
-      <!-- Ricerca + Filtro Gruppo Muscolare -->
       <div class="p-4 border-b border-slate-800 space-y-3 bg-slate-950/40">
         <div class="relative">
           <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3"></i>
-          <input type="text" id="exerciseSearchInput" oninput="renderExercisePickerList()" placeholder="Cerca esercizio (es. Hack Squat, Bayesian Curl...)" class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" />
+          <input type="text" id="exerciseSearchInput" oninput="renderExercisePickerList()" placeholder="Cerca esercizio (es. Hack Squat, Panca...)" class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" />
         </div>
 
-        <!-- Creazione Rapida Esercizio Personalizzato -->
         <div class="flex items-center gap-2">
           <input type="text" id="customExerciseNameInput" placeholder="Oppure crea nuovo esercizio..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500" />
           <select id="customExerciseMuscleSelect" class="bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-2 text-xs text-slate-200 focus:outline-none">
@@ -445,24 +399,37 @@
             <option value="Tricipiti">Tricipiti</option>
             <option value="Core">Core</option>
           </select>
-          <button onclick="createAndSelectCustomExercise()" class="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shrink-0">
+          <button type="button" onclick="createAndSelectCustomExercise()" class="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shrink-0">
             + Crea
           </button>
         </div>
       </div>
 
-      <!-- Lista Esercizi Cliccabili -->
-      <div id="exercisePickerList" class="p-4 overflow-y-auto space-y-2 flex-1">
-        <!-- Popolato da JS -->
+      <div id="exercisePickerList" class="p-4 overflow-y-auto space-y-2 flex-1"></div>
+    </div>
+  </div>
+
+  <!-- MODALE 3: FINESTRA DI CONFERMA INTEGRATA -->
+  <div id="customConfirmModal" class="fixed inset-0 z-[110] bg-black/80 ios-blur hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xs p-5 space-y-4 text-center shadow-2xl">
+      <h4 id="confirmModalTitle" class="text-sm font-bold text-white">Conferma</h4>
+      <p id="confirmModalText" class="text-xs text-slate-300 leading-relaxed"></p>
+      <div class="flex items-center gap-2 pt-1">
+        <button type="button" onclick="closeCustomConfirm()" class="flex-1 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold">
+          Annulla
+        </button>
+        <button type="button" id="confirmModalActionBtn" class="flex-1 py-2.5 rounded-xl bg-rose-600 text-white text-xs font-semibold">
+          Conferma
+        </button>
       </div>
     </div>
   </div>
 
   <!-- TOAST DI NOTIFICA -->
-  <div id="toastNotification" class="fixed top-16 left-1/2 -translate-x-1/2 z-[100] pointer-events-none opacity-0 transition-opacity duration-200">
-    <div class="bg-emerald-600 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-xl flex items-center gap-2">
-      <i data-lucide="check-circle" class="w-4 h-4"></i>
-      <span id="toastMessage">Operazione completata</span>
+  <div id="toastNotification" class="fixed top-16 left-1/2 -translate-x-1/2 z-[120] pointer-events-none opacity-0 transition-opacity duration-200 w-max max-w-[90vw]">
+    <div id="toastBox" class="bg-emerald-600 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-xl flex items-center gap-2">
+      <i data-lucide="check-circle" class="w-4 h-4 shrink-0"></i>
+      <span id="toastMessage" class="truncate">Operazione completata</span>
     </div>
   </div>
 
@@ -470,7 +437,6 @@
   <!-- LOGICA JAVASCRIPT                                                         -->
   <!-- ========================================================================= -->
   <script>
-    // --- DATABASE PREDEFINITO ESERCIZI ---
     const DEFAULT_EXERCISES = [
       { id: 'ex_bench_db', name: 'Panca Piana Manubri', muscle: 'Petto' },
       { id: 'ex_incline_db', name: 'Panca Inclinata 30° Manubri', muscle: 'Petto' },
@@ -497,7 +463,6 @@
       { id: 'ex_dips', name: 'Dip alle Parallele', muscle: 'Tricipiti' }
     ];
 
-    // --- SCHEDE PREDEFINITE ---
     const DEFAULT_ROUTINES = [
       {
         id: 'rt_upper_a',
@@ -550,42 +515,44 @@
       }
     ];
 
-    // --- STATO GLOBALE DELL'APP ---
     let state = {
       exercises: [],
       routines: [],
       history: [],
-      settings: {
-        defaultRest: 90,
-        autoRest: true
-      },
       activeWorkout: {
         routineId: 'rt_upper_a',
         routineName: 'Upper Body A',
         note: '',
-        elapsedSeconds: 0,
-        isRunning: false, // NON parte da solo all'apertura!
-        exercises: [] // [{ instanceId, exId, sets: [{ kg, reps, rir, done }] }]
+        startTime: null,
+        exercises: []
       }
     };
 
-    // Variabili Timer & UI
-    let workoutInterval = null;
-    let restInterval = null;
-    let restRemainingSeconds = 0;
-    let pickerContext = 'workout'; // 'workout' oppure 'routineEditor'
+    let pickerContext = 'workout';
     let currentEditingRoutineId = null;
     let strengthChartInstance = null;
-    let volumeChartInstance = null;
+    let pendingConfirmCallback = null;
 
-    // --- INIZIALIZZAZIONE ---
+    function refreshIcons() {
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    }
+
+    function parseNum(val) {
+      if (val === undefined || val === null || val === '') return 0;
+      const clean = String(val).replace(',', '.').trim();
+      const n = parseFloat(clean);
+      return isNaN(n) ? 0 : n;
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       loadDataFromStorage();
       updateHeaderDate();
       renderRoutinePills();
       renderActiveWorkout();
-      updateWorkoutTimerUI();
-      lucide.createIcons();
+      updateStartTimeUI();
+      refreshIcons();
     });
 
     function updateHeaderDate() {
@@ -594,27 +561,71 @@
       document.getElementById('currentDateDisplay').textContent = now.toLocaleDateString('it-IT', opts);
     }
 
+    function getCurrentTimeHHMM() {
+      const now = new Date();
+      return now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // --- MODALE DI CONFERMA INTEGRATO ---
+    function openCustomConfirm(title, text, onConfirm) {
+      document.getElementById('confirmModalTitle').textContent = title;
+      document.getElementById('confirmModalText').textContent = text;
+      pendingConfirmCallback = onConfirm;
+      const btn = document.getElementById('confirmModalActionBtn');
+      btn.onclick = () => {
+        const cb = pendingConfirmCallback;
+        closeCustomConfirm();
+        if (cb) cb();
+      };
+      document.getElementById('customConfirmModal').classList.remove('hidden');
+    }
+
+    function closeCustomConfirm() {
+      document.getElementById('customConfirmModal').classList.add('hidden');
+      pendingConfirmCallback = null;
+    }
+
     // --- STORAGE & PERSISTENZA ---
     function loadDataFromStorage() {
-      const savedEx = localStorage.getItem('ironos_exercises_v2');
-      const savedRt = localStorage.getItem('ironos_routines_v2');
-      const savedHi = localStorage.getItem('ironos_history_v2');
-      const savedSt = localStorage.getItem('ironos_settings_v2');
-      const savedAw = localStorage.getItem('ironos_active_workout_v2');
+      try {
+        const savedEx = localStorage.getItem('ironos_exercises_v2');
+        const savedRt = localStorage.getItem('ironos_routines_v2');
+        const savedHi = localStorage.getItem('ironos_history_v2');
+        const savedAw = localStorage.getItem('ironos_active_workout_v2');
 
-      state.exercises = savedEx ? JSON.parse(savedEx) : [...DEFAULT_EXERCISES];
-      state.routines = savedRt ? JSON.parse(savedRt) : JSON.parse(JSON.stringify(DEFAULT_ROUTINES));
-      state.history = savedHi ? JSON.parse(savedHi) : [];
-      if (savedSt) state.settings = JSON.parse(savedSt);
+        state.exercises = savedEx ? JSON.parse(savedEx) : [...DEFAULT_EXERCISES];
+        if (!Array.isArray(state.exercises) || state.exercises.length === 0) {
+          state.exercises = [...DEFAULT_EXERCISES];
+        }
 
-      document.getElementById('defaultRestSelect').value = state.settings.defaultRest || 90;
-      document.getElementById('autoRestToggle').checked = state.settings.autoRest !== false;
+        state.routines = savedRt ? JSON.parse(savedRt) : JSON.parse(JSON.stringify(DEFAULT_ROUTINES));
+        if (!Array.isArray(state.routines) || state.routines.length === 0) {
+          state.routines = JSON.parse(JSON.stringify(DEFAULT_ROUTINES));
+        }
 
-      if (savedAw) {
-        state.activeWorkout = JSON.parse(savedAw);
-        // Ci assicuriamo che all'apertura della pagina il cronometro sia in pausa finché l'utente non preme Play
-        state.activeWorkout.isRunning = false;
-      } else {
+        state.history = savedHi ? JSON.parse(savedHi) : [];
+        if (!Array.isArray(state.history)) state.history = [];
+
+        if (savedAw) {
+          const parsedAw = JSON.parse(savedAw);
+          if (parsedAw && Array.isArray(parsedAw.exercises)) {
+            state.activeWorkout = {
+              routineId: parsedAw.routineId || state.routines[0].id,
+              routineName: parsedAw.routineName || state.routines[0].name,
+              note: parsedAw.note || '',
+              startTime: parsedAw.startTime || null,
+              exercises: parsedAw.exercises
+            };
+          } else {
+            loadRoutineIntoActiveWorkout(state.routines[0].id, false);
+          }
+        } else {
+          loadRoutineIntoActiveWorkout(state.routines[0].id, false);
+        }
+      } catch (e) {
+        state.exercises = [...DEFAULT_EXERCISES];
+        state.routines = JSON.parse(JSON.stringify(DEFAULT_ROUTINES));
+        state.history = [];
         loadRoutineIntoActiveWorkout(state.routines[0].id, false);
       }
     }
@@ -623,7 +634,6 @@
       localStorage.setItem('ironos_exercises_v2', JSON.stringify(state.exercises));
       localStorage.setItem('ironos_routines_v2', JSON.stringify(state.routines));
       localStorage.setItem('ironos_history_v2', JSON.stringify(state.history));
-      localStorage.setItem('ironos_settings_v2', JSON.stringify(state.settings));
       saveActiveWorkoutState();
     }
 
@@ -633,74 +643,53 @@
       localStorage.setItem('ironos_active_workout_v2', JSON.stringify(state.activeWorkout));
     }
 
-    // --- CRONOMETRO SESSIONE (CONTROLLO MANUALE) ---
-    function toggleWorkoutTimer() {
-      if (state.activeWorkout.isRunning) {
-        pauseWorkoutTimer();
-      } else {
-        startWorkoutTimer();
-      }
+    function syncActiveWorkoutStructureToRoutine() {
+      if (state.activeWorkout.routineId === 'free') return;
+      const rt = state.routines.find(r => r.id === state.activeWorkout.routineId);
+      if (!rt) return;
+      rt.exercises = state.activeWorkout.exercises.map(ex => ({
+        exId: ex.exId,
+        sets: ex.sets.length
+      }));
+      localStorage.setItem('ironos_routines_v2', JSON.stringify(state.routines));
+      renderRoutinePills();
     }
 
-    function startWorkoutTimer() {
-      if (state.activeWorkout.isRunning) return;
-      state.activeWorkout.isRunning = true;
-      if (workoutInterval) clearInterval(workoutInterval);
-      workoutInterval = setInterval(() => {
-        state.activeWorkout.elapsedSeconds++;
-        updateWorkoutTimerUI();
-        if (state.activeWorkout.elapsedSeconds % 5 === 0) saveActiveWorkoutState();
-      }, 1000);
-      updateWorkoutTimerUI();
-    }
-
-    function pauseWorkoutTimer() {
-      state.activeWorkout.isRunning = false;
-      if (workoutInterval) {
-        clearInterval(workoutInterval);
-        workoutInterval = null;
-      }
+    // --- GESTIONE ORARIO D'INIZIO ---
+    function markOrResetStartTime() {
+      state.activeWorkout.startTime = getCurrentTimeHHMM();
       saveActiveWorkoutState();
-      updateWorkoutTimerUI();
+      updateStartTimeUI();
+      showToast(`Inizio fissato alle ${state.activeWorkout.startTime}`);
     }
 
-    function resetWorkoutTimer() {
-      pauseWorkoutTimer();
-      state.activeWorkout.elapsedSeconds = 0;
+    function clearStartTime() {
+      state.activeWorkout.startTime = null;
       saveActiveWorkoutState();
-      updateWorkoutTimerUI();
-      showToast('Cronometro azzerato');
+      updateStartTimeUI();
+      showToast('Orario azzerato');
     }
 
-    function updateWorkoutTimerUI() {
-      const sec = state.activeWorkout.elapsedSeconds || 0;
-      const mins = Math.floor(sec / 60);
-      const remSec = sec % 60;
-      const formatted = `${String(mins).padStart(2, '0')}:${String(remSec).padStart(2, '0')}`;
-      document.getElementById('workoutTimerDisplay').textContent = formatted;
-
-      const btn = document.getElementById('timerToggleBtn');
+    function updateStartTimeUI() {
+      const st = state.activeWorkout.startTime;
+      const display = document.getElementById('startTimeDisplay');
       const badge = document.getElementById('sessionStatusBadge');
-      const resetBtn = document.getElementById('timerResetBtn');
+      const clearBtn = document.getElementById('clearStartTimeBtn');
 
-      if (sec > 0) {
-        resetBtn.classList.remove('hidden');
-      } else {
-        resetBtn.classList.add('hidden');
-      }
-
-      if (state.activeWorkout.isRunning) {
-        btn.className = 'w-7 h-7 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 flex items-center justify-center transition active:scale-95';
-        btn.innerHTML = '<i data-lucide="pause" class="w-3.5 h-3.5 fill-current"></i>';
-        badge.textContent = 'Live';
+      if (st) {
+        display.textContent = st;
+        display.className = 'text-xs font-mono font-bold text-emerald-400 leading-tight mt-0.5';
+        badge.textContent = 'In Corso';
         badge.className = 'text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+        clearBtn.classList.remove('hidden');
       } else {
-        btn.className = 'w-7 h-7 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center transition active:scale-95';
-        btn.innerHTML = '<i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i>';
-        badge.textContent = sec > 0 ? 'In Pausa' : 'Pronto';
+        display.textContent = 'Tocca';
+        display.className = 'text-xs font-mono font-bold text-slate-400 leading-tight mt-0.5';
+        badge.textContent = 'Pronto';
         badge.className = 'text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-slate-400';
+        clearBtn.classList.add('hidden');
       }
-      lucide.createIcons();
+      refreshIcons();
     }
 
     // --- CARICAMENTO E RENDERING SCHEDE ---
@@ -711,6 +700,7 @@
       state.routines.forEach(rt => {
         const isActive = state.activeWorkout.routineId === rt.id;
         const btn = document.createElement('button');
+        btn.type = 'button';
         btn.className = `px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 shrink-0 ${
           isActive
             ? 'bg-blue-600 text-white shadow-md shadow-blue-600/25'
@@ -721,9 +711,9 @@
         container.appendChild(btn);
       });
 
-      // Pill Allenamento Libero
       const isFree = state.activeWorkout.routineId === 'free';
       const freeBtn = document.createElement('button');
+      freeBtn.type = 'button';
       freeBtn.className = `px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition shrink-0 ${
         isFree
           ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/25'
@@ -735,12 +725,7 @@
     }
 
     function selectRoutineForWorkout(routineId) {
-      const hasCompletedSets = state.activeWorkout.exercises.some(ex => ex.sets.some(s => s.done));
-      if (hasCompletedSets && state.activeWorkout.routineId !== routineId) {
-        if (!confirm('Hai già delle serie completate nella sessione attuale. Vuoi cambiare scheda e sovrascrivere la sessione in corso?')) {
-          return;
-        }
-      }
+      if (state.activeWorkout.routineId === routineId) return;
       loadRoutineIntoActiveWorkout(routineId, true);
     }
 
@@ -750,8 +735,7 @@
           routineId: 'free',
           routineName: 'Allenamento Libero',
           note: '',
-          elapsedSeconds: 0,
-          isRunning: false,
+          startTime: null,
           exercises: []
         };
       } else {
@@ -760,8 +744,7 @@
           routineId: rt.id,
           routineName: rt.name,
           note: '',
-          elapsedSeconds: 0,
-          isRunning: false,
+          startTime: null,
           exercises: rt.exercises.map(item => {
             const prevSets = getPreviousSetsForExercise(item.exId);
             const count = item.sets || 3;
@@ -771,7 +754,6 @@
               setsArr.push({
                 kg: prev ? prev.kg : '',
                 reps: prev ? prev.reps : '',
-                rir: prev && prev.rir !== undefined ? prev.rir : '1',
                 done: false
               });
             }
@@ -784,22 +766,22 @@
         };
       }
 
-      pauseWorkoutTimer();
       saveActiveWorkoutState();
       if (render) {
         renderRoutinePills();
         renderActiveWorkout();
-        updateWorkoutTimerUI();
+        updateStartTimeUI();
       }
     }
 
-    // Trova i dati dell'ultima volta che è stato fatto quell'esercizio
     function getPreviousSetsForExercise(exId) {
       for (let i = state.history.length - 1; i >= 0; i--) {
         const sess = state.history[i];
-        const found = sess.exercises.find(e => e.exId === exId);
-        if (found && found.sets && found.sets.length > 0) {
-          return found.sets;
+        if (sess && Array.isArray(sess.exercises)) {
+          const found = sess.exercises.find(e => e.exId === exId);
+          if (found && found.sets && found.sets.length > 0) {
+            return found.sets;
+          }
         }
       }
       return [];
@@ -809,11 +791,10 @@
       return state.exercises.find(e => e.id === exId) || { id: exId, name: 'Esercizio', muscle: 'Altro' };
     }
 
-    // Calcolo 1RM Epley: Peso * (1 + Reps/30)
     function calcOneRM(kg, reps) {
-      const w = parseFloat(kg);
-      const r = parseInt(reps);
-      if (!w || !r || w <= 0 || r <= 0) return 0;
+      const w = parseNum(kg);
+      const r = parseInt(reps) || 0;
+      if (w <= 0 || r <= 0) return 0;
       if (r === 1) return Math.round(w);
       return Math.round(w * (1 + r / 30));
     }
@@ -829,12 +810,12 @@
       if (state.activeWorkout.exercises.length === 0) {
         container.innerHTML = `
           <div class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-6 text-center space-y-2">
-            <p class="text-sm font-semibold text-slate-300">Nessun esercizio in questa sessione</p>
-            <p class="text-xs text-slate-500">Tocca "Aggiungi Esercizio alla Sessione" qui sotto oppure modifica la scheda.</p>
+            <p class="text-sm font-semibold text-slate-300">Nessun esercizio in questa scheda</p>
+            <p class="text-xs text-slate-500">Tocca "Aggiungi Esercizio" qui sotto per inserirlo.</p>
           </div>
         `;
         updateLiveMetrics();
-        lucide.createIcons();
+        refreshIcons();
         return;
       }
 
@@ -842,7 +823,6 @@
         const meta = getExerciseMeta(exItem.exId);
         const prevSets = getPreviousSetsForExercise(exItem.exId);
 
-        // Calcola miglior 1RM della sessione corrente per questo esercizio
         let best1RM = 0;
         exItem.sets.forEach(s => {
           const rm = calcOneRM(s.kg, s.reps);
@@ -859,41 +839,29 @@
           const rowBg = s.done ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-slate-950/50 border-slate-800/60';
 
           setsRowsHtml += `
-            <div class="grid grid-cols-12 items-center gap-1.5 px-2.5 py-2 rounded-xl border ${rowBg} transition">
-              <!-- Numero Serie -->
+            <div class="grid grid-cols-12 items-center gap-2 px-3 py-2 rounded-xl border ${rowBg} transition">
               <div class="col-span-1 text-center">
                 <span class="text-xs font-bold ${s.done ? 'text-emerald-400' : 'text-slate-400'}">${setIdx + 1}</span>
               </div>
 
-              <!-- Storico Precedente (Cliccabile per copiare) -->
-              <div class="col-span-3">
-                <button type="button" onclick="copyPrevToSet(${exIndex}, ${setIdx})" class="text-[11px] font-medium text-slate-400 hover:text-blue-400 truncate block w-full text-left" title="Tocca per copiare i dati precedenti">
+              <div class="col-span-4">
+                <button type="button" onclick="copyPrevToSet(${exIndex}, ${setIdx})" class="text-xs font-medium text-slate-400 hover:text-blue-400 truncate block w-full text-left">
                   ${prevText}
                 </button>
               </div>
 
-              <!-- Input KG -->
               <div class="col-span-3">
-                <input type="number" step="0.5" inputmode="decimal" placeholder="Kg" value="${s.kg}"
+                <input type="text" inputmode="decimal" placeholder="Kg" value="${s.kg !== undefined ? s.kg : ''}"
                   oninput="updateSetField(${exIndex}, ${setIdx}, 'kg', this.value)"
                   class="w-full bg-slate-900 border border-slate-700/80 rounded-lg py-1.5 px-2 text-center text-sm font-bold text-white focus:outline-none focus:border-blue-500" />
               </div>
 
-              <!-- Input REPS -->
-              <div class="col-span-2">
-                <input type="number" inputmode="numeric" placeholder="Reps" value="${s.reps}"
+              <div class="col-span-3">
+                <input type="text" inputmode="numeric" placeholder="Reps" value="${s.reps !== undefined ? s.reps : ''}"
                   oninput="updateSetField(${exIndex}, ${setIdx}, 'reps', this.value)"
-                  class="w-full bg-slate-900 border border-slate-700/80 rounded-lg py-1.5 px-1 text-center text-sm font-bold text-white focus:outline-none focus:border-blue-500" />
+                  class="w-full bg-slate-900 border border-slate-700/80 rounded-lg py-1.5 px-2 text-center text-sm font-bold text-white focus:outline-none focus:border-blue-500" />
               </div>
 
-              <!-- Input RIR -->
-              <div class="col-span-2">
-                <input type="number" inputmode="numeric" placeholder="RIR" value="${s.rir}"
-                  oninput="updateSetField(${exIndex}, ${setIdx}, 'rir', this.value)"
-                  class="w-full bg-slate-900 border border-slate-700/80 rounded-lg py-1.5 px-1 text-center text-xs font-semibold text-amber-300 focus:outline-none focus:border-amber-500" />
-              </div>
-
-              <!-- Bottone Spunta Serie -->
               <div class="col-span-1 flex justify-end">
                 <button type="button" onclick="toggleSetDone(${exIndex}, ${setIdx})"
                   class="w-7 h-7 rounded-lg flex items-center justify-center transition active:scale-90 ${
@@ -909,36 +877,33 @@
         });
 
         card.innerHTML = `
-          <!-- Intestazione Esercizio -->
           <div class="px-4 py-3 bg-slate-900 border-b border-slate-800/80 flex items-center justify-between gap-2">
             <div>
               <div class="flex items-center gap-2">
                 <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-blue-500/15 text-blue-400 border border-blue-500/20">${meta.muscle}</span>
-                ${best1RM > 0 ? `<span class="text-[10px] font-semibold text-indigo-400">1RM Stimato: ${best1RM} kg</span>` : ''}
+                ${best1RM > 0 ? `<span class="text-[10px] font-semibold text-indigo-400">1RM: ${best1RM} kg</span>` : ''}
               </div>
               <h3 class="text-sm font-bold text-white mt-1">${meta.name}</h3>
             </div>
             <div class="flex items-center gap-1">
-              <button onclick="moveWorkoutExercise(${exIndex}, -1)" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-300" title="Sposta su">
+              <button type="button" onclick="moveWorkoutExercise(${exIndex}, -1)" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-300">
                 <i data-lucide="chevron-up" class="w-4 h-4"></i>
               </button>
-              <button onclick="moveWorkoutExercise(${exIndex}, 1)" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-300" title="Sposta giù">
+              <button type="button" onclick="moveWorkoutExercise(${exIndex}, 1)" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-300">
                 <i data-lucide="chevron-down" class="w-4 h-4"></i>
               </button>
-              <button onclick="removeExerciseFromWorkout(${exIndex})" class="p-1.5 rounded-lg text-slate-500 hover:text-rose-400" title="Rimuovi esercizio">
+              <button type="button" onclick="removeExerciseFromWorkout(${exIndex})" class="p-1.5 rounded-lg text-slate-500 hover:text-rose-400">
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
             </div>
           </div>
 
-          <!-- Corpo Serie -->
           <div class="p-3 space-y-2">
-            <div class="grid grid-cols-12 text-[10px] font-semibold uppercase tracking-wider text-slate-400 px-2.5">
+            <div class="grid grid-cols-12 text-[10px] font-semibold uppercase tracking-wider text-slate-400 px-3">
               <div class="col-span-1 text-center">#</div>
-              <div class="col-span-3">Precedente</div>
+              <div class="col-span-4">Precedente</div>
               <div class="col-span-3 text-center">Kg</div>
-              <div class="col-span-2 text-center">Reps</div>
-              <div class="col-span-2 text-center">RIR</div>
+              <div class="col-span-3 text-center">Ripetizioni</div>
               <div class="col-span-1 text-right">OK</div>
             </div>
 
@@ -946,7 +911,6 @@
               ${setsRowsHtml}
             </div>
 
-            <!-- Azioni Serie (+ Aggiungi Serie / - Rimuovi Serie) -->
             <div class="flex items-center gap-2 pt-1">
               <button type="button" onclick="addSetToExercise(${exIndex})" class="flex-1 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-xs font-semibold text-blue-400 flex items-center justify-center gap-1 active:scale-98 transition">
                 <i data-lucide="plus" class="w-3.5 h-3.5"></i> Serie
@@ -964,7 +928,7 @@
       });
 
       updateLiveMetrics();
-      lucide.createIcons();
+      refreshIcons();
     }
 
     // --- AZIONI SULLE SERIE ---
@@ -981,7 +945,6 @@
       if (!prev) return;
       exItem.sets[setIdx].kg = prev.kg;
       exItem.sets[setIdx].reps = prev.reps;
-      exItem.sets[setIdx].rir = prev.rir !== undefined ? prev.rir : '1';
       saveActiveWorkoutState();
       renderActiveWorkout();
     }
@@ -990,14 +953,9 @@
       const targetSet = state.activeWorkout.exercises[exIndex].sets[setIdx];
       targetSet.done = !targetSet.done;
 
-      // Se l'utente spunta la sua prima serie e il timer sessione era fermo a 0, avvia il timer sessione
-      if (targetSet.done && !state.activeWorkout.isRunning && state.activeWorkout.elapsedSeconds === 0) {
-        startWorkoutTimer();
-      }
-
-      // Se la serie viene completata e il Recupero Automatico è attivo, fai partire il timer di recupero
-      if (targetSet.done && state.settings.autoRest) {
-        startRestTimer(parseInt(state.settings.defaultRest) || 90);
+      if (targetSet.done && !state.activeWorkout.startTime) {
+        state.activeWorkout.startTime = getCurrentTimeHHMM();
+        updateStartTimeUI();
       }
 
       saveActiveWorkoutState();
@@ -1006,13 +964,13 @@
 
     function addSetToExercise(exIndex) {
       const sets = state.activeWorkout.exercises[exIndex].sets;
-      const lastSet = sets[sets.length - 1] || { kg: '', reps: '', rir: '1' };
+      const lastSet = sets[sets.length - 1] || { kg: '', reps: '' };
       sets.push({
         kg: lastSet.kg,
         reps: lastSet.reps,
-        rir: lastSet.rir,
         done: false
       });
+      syncActiveWorkoutStructureToRoutine();
       saveActiveWorkoutState();
       renderActiveWorkout();
     }
@@ -1021,6 +979,7 @@
       const sets = state.activeWorkout.exercises[exIndex].sets;
       if (sets.length > 1) {
         sets.pop();
+        syncActiveWorkoutStructureToRoutine();
         saveActiveWorkoutState();
         renderActiveWorkout();
       }
@@ -1028,8 +987,10 @@
 
     function removeExerciseFromWorkout(exIndex) {
       state.activeWorkout.exercises.splice(exIndex, 1);
+      syncActiveWorkoutStructureToRoutine();
       saveActiveWorkoutState();
       renderActiveWorkout();
+      showToast('Esercizio rimosso');
     }
 
     function moveWorkoutExercise(exIndex, direction) {
@@ -1038,8 +999,22 @@
       const temp = state.activeWorkout.exercises[exIndex];
       state.activeWorkout.exercises[exIndex] = state.activeWorkout.exercises[targetIndex];
       state.activeWorkout.exercises[targetIndex] = temp;
+      syncActiveWorkoutStructureToRoutine();
       saveActiveWorkoutState();
       renderActiveWorkout();
+    }
+
+    function resetCurrentSessionValues() {
+      state.activeWorkout.exercises.forEach(ex => {
+        ex.sets.forEach(s => {
+          s.done = false;
+        });
+      });
+      state.activeWorkout.startTime = null;
+      saveActiveWorkoutState();
+      renderActiveWorkout();
+      updateStartTimeUI();
+      showToast('Spunte serie azzerate');
     }
 
     function updateLiveMetrics() {
@@ -1052,7 +1027,7 @@
           totalSets++;
           if (s.done) {
             doneSets++;
-            const w = parseFloat(s.kg) || 0;
+            const w = parseNum(s.kg);
             const r = parseInt(s.reps) || 0;
             vol += w * r;
           }
@@ -1064,89 +1039,22 @@
       document.getElementById('liveTotalSets').textContent = `/${totalSets}`;
     }
 
-    // --- TIMER DI RECUPERO CON SEGNALE ACUSTICO ---
-    function updateDefaultRest(seconds) {
-      state.settings.defaultRest = parseInt(seconds);
-      saveAllData();
-    }
-
-    function toggleAutoRestSetting(checked) {
-      state.settings.autoRest = checked;
-      saveAllData();
-    }
-
-    function startRestTimer(seconds) {
-      if (restInterval) clearInterval(restInterval);
-      restRemainingSeconds = seconds;
-      document.getElementById('restTimerBar').classList.remove('hidden');
-      updateRestTimerUI();
-
-      restInterval = setInterval(() => {
-        restRemainingSeconds--;
-        if (restRemainingSeconds <= 0) {
-          stopRestTimer();
-          playRestFinishedBeep();
-          showToast('Recupero terminato! Pronti per la prossima serie.');
-        } else {
-          updateRestTimerUI();
-        }
-      }, 1000);
-    }
-
-    function adjustRestTimer(delta) {
-      restRemainingSeconds = Math.max(5, restRemainingSeconds + delta);
-      updateRestTimerUI();
-    }
-
-    function stopRestTimer() {
-      if (restInterval) {
-        clearInterval(restInterval);
-        restInterval = null;
-      }
-      document.getElementById('restTimerBar').classList.add('hidden');
-    }
-
-    function updateRestTimerUI() {
-      const m = Math.floor(restRemainingSeconds / 60);
-      const s = restRemainingSeconds % 60;
-      document.getElementById('restTimerCountdown').textContent =
-        `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-    }
-
-    function playRestFinishedBeep() {
-      try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        [0, 0.2, 0.4].forEach(delay => {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(880, ctx.currentTime + delay);
-          gain.gain.setValueAtTime(0.25, ctx.currentTime + delay);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.15);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start(ctx.currentTime + delay);
-          osc.stop(ctx.currentTime + delay + 0.16);
-        });
-      } catch (e) {}
-    }
-
-    // --- GESTIONE MODALE SELETTORE ESERCIZI (FUNZIONA SIA IN LIVE CHE NELL'EDITOR SCHEDE) ---
+    // --- SELETTORE ESERCIZI ---
     function openExercisePicker(context) {
-      pickerContext = context; // 'workout' o 'routineEditor'
+      pickerContext = context;
       const subtitle = document.getElementById('pickerTargetSubtitle');
       if (context === 'routineEditor') {
         const rt = state.routines.find(r => r.id === currentEditingRoutineId);
         subtitle.textContent = `Aggiungi alla scheda: ${rt ? rt.name : ''}`;
       } else {
-        subtitle.textContent = `Aggiungi alla sessione corrente (${state.activeWorkout.routineName})`;
+        subtitle.textContent = `Aggiungi a: ${state.activeWorkout.routineName}`;
       }
 
       document.getElementById('exerciseSearchInput').value = '';
       document.getElementById('customExerciseNameInput').value = '';
       renderExercisePickerList();
       document.getElementById('exercisePickerModal').classList.remove('hidden');
-      lucide.createIcons();
+      refreshIcons();
     }
 
     function closeExercisePicker() {
@@ -1163,7 +1071,7 @@
       );
 
       if (filtered.length === 0) {
-        listEl.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">Nessun esercizio trovato. Puoi crearlo subito usando il campo verde qui sopra!</p>`;
+        listEl.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">Nessun esercizio trovato. Scrivi il nome nel campo qui sopra e tocca "+ Crea"!</p>`;
         return;
       }
 
@@ -1183,31 +1091,32 @@
         item.onclick = () => selectExerciseFromPicker(ex.id);
         listEl.appendChild(item);
       });
-      lucide.createIcons();
+      refreshIcons();
     }
 
     function selectExerciseFromPicker(exId) {
       const meta = getExerciseMeta(exId);
 
       if (pickerContext === 'routineEditor') {
-        // Aggiunge l'esercizio direttamente alla scheda che si sta modificando!
         const rt = state.routines.find(r => r.id === currentEditingRoutineId);
         if (rt) {
           rt.exercises.push({ exId: exId, sets: 3 });
           saveAllData();
           loadRoutineIntoEditor(rt.id);
-          renderRoutinePills();
-          showToast(`"${meta.name}" aggiunto alla scheda!`);
+          if (state.activeWorkout.routineId === rt.id) {
+            loadRoutineIntoActiveWorkout(rt.id, true);
+          } else {
+            renderRoutinePills();
+          }
+          showToast(`"${meta.name}" aggiunto!`);
         }
       } else {
-        // Aggiunge l'esercizio alla sessione di allenamento attiva
         const prevSets = getPreviousSetsForExercise(exId);
         const defaultSets = [0, 1, 2].map(idx => {
           const prev = prevSets[idx] || prevSets[prevSets.length - 1] || null;
           return {
             kg: prev ? prev.kg : '',
             reps: prev ? prev.reps : '',
-            rir: prev && prev.rir !== undefined ? prev.rir : '1',
             done: false
           };
         });
@@ -1217,9 +1126,10 @@
           exId: exId,
           sets: defaultSets
         });
+        syncActiveWorkoutStructureToRoutine();
         saveActiveWorkoutState();
         renderActiveWorkout();
-        showToast(`"${meta.name}" aggiunto alla sessione!`);
+        showToast(`"${meta.name}" aggiunto!`);
       }
 
       closeExercisePicker();
@@ -1230,7 +1140,7 @@
       const muscleSelect = document.getElementById('customExerciseMuscleSelect');
       const name = nameInput.value.trim();
       if (!name) {
-        alert('Inserisci il nome del nuovo esercizio.');
+        showToast('Scrivi prima il nome del nuovo esercizio', true);
         return;
       }
 
@@ -1245,7 +1155,7 @@
       selectExerciseFromPicker(newEx.id);
     }
 
-    // --- GESTIONE & EDITOR DELLE SCHEDE (ROUTINE MANAGER) ---
+    // --- GESTIONE & EDITOR DELLE SCHEDE ---
     function openRoutineManagerModal() {
       if (state.routines.length === 0) {
         state.routines = JSON.parse(JSON.stringify(DEFAULT_ROUTINES));
@@ -1258,12 +1168,16 @@
       populateEditorRoutineSelect();
       loadRoutineIntoEditor(currentEditingRoutineId);
       document.getElementById('routineManagerModal').classList.remove('hidden');
-      lucide.createIcons();
+      refreshIcons();
     }
 
     function closeRoutineManagerModal() {
       document.getElementById('routineManagerModal').classList.add('hidden');
-      renderRoutinePills();
+      if (state.activeWorkout.routineId === currentEditingRoutineId) {
+        loadRoutineIntoActiveWorkout(currentEditingRoutineId, true);
+      } else {
+        renderRoutinePills();
+      }
     }
 
     function populateEditorRoutineSelect() {
@@ -1313,31 +1227,32 @@
             <input type="number" min="1" max="15" value="${item.sets || 3}"
               onchange="updateRoutineExerciseSets(${idx}, this.value)"
               class="w-12 bg-slate-900 border border-slate-700 rounded-lg py-1 text-center text-xs font-bold text-white" />
-            <button onclick="moveRoutineExercise(${idx}, -1)" class="p-1.5 text-slate-400 hover:text-white">
+            <button type="button" onclick="moveRoutineExercise(${idx}, -1)" class="p-1.5 text-slate-400 hover:text-white">
               <i data-lucide="chevron-up" class="w-4 h-4"></i>
             </button>
-            <button onclick="moveRoutineExercise(${idx}, 1)" class="p-1.5 text-slate-400 hover:text-white">
+            <button type="button" onclick="moveRoutineExercise(${idx}, 1)" class="p-1.5 text-slate-400 hover:text-white">
               <i data-lucide="chevron-down" class="w-4 h-4"></i>
             </button>
-            <button onclick="removeRoutineExercise(${idx})" class="p-1.5 text-rose-400 hover:text-rose-300">
+            <button type="button" onclick="removeRoutineExercise(${idx})" class="p-1.5 text-rose-400 hover:text-rose-300">
               <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>
           </div>
         `;
         list.appendChild(row);
       });
-      lucide.createIcons();
+      refreshIcons();
     }
 
     function updateEditorRoutineName(newName) {
       const rt = state.routines.find(r => r.id === currentEditingRoutineId);
       if (!rt) return;
-      rt.name = newName.trim() || 'Scheda Senza Nome';
+      rt.name = newName.trim() || 'Scheda';
       if (state.activeWorkout.routineId === rt.id) {
         state.activeWorkout.routineName = rt.name;
       }
       saveAllData();
       populateEditorRoutineSelect();
+      renderRoutinePills();
     }
 
     function updateRoutineExerciseSets(exIdx, newSets) {
@@ -1370,7 +1285,7 @@
     function createNewRoutineInEditor() {
       const newRt = {
         id: 'rt_' + Date.now(),
-        name: 'Nuova Scheda ' + (state.routines.length + 1),
+        name: 'Scheda ' + (state.routines.length + 1),
         exercises: []
       };
       state.routines.push(newRt);
@@ -1378,112 +1293,102 @@
       currentEditingRoutineId = newRt.id;
       populateEditorRoutineSelect();
       loadRoutineIntoEditor(newRt.id);
-      showToast('Nuova scheda creata! Aggiungi ora gli esercizi.');
+      renderRoutinePills();
+      showToast('Nuova scheda creata!');
     }
 
     function deleteRoutineFromEditor() {
       if (state.routines.length <= 1) {
-        alert('Deve rimanere almeno una scheda salvata.');
+        showToast('Deve rimanere almeno una scheda', true);
         return;
       }
       const rt = state.routines.find(r => r.id === currentEditingRoutineId);
-      if (!confirm(`Vuoi eliminare definitivamente la scheda "${rt.name}"?`)) return;
-
-      state.routines = state.routines.filter(r => r.id !== currentEditingRoutineId);
-      currentEditingRoutineId = state.routines[0].id;
-      saveAllData();
-      populateEditorRoutineSelect();
-      loadRoutineIntoEditor(currentEditingRoutineId);
-      renderRoutinePills();
+      openCustomConfirm(
+        'Elimina Scheda',
+        `Vuoi eliminare la scheda "${rt.name}"?`,
+        () => {
+          state.routines = state.routines.filter(r => r.id !== currentEditingRoutineId);
+          currentEditingRoutineId = state.routines[0].id;
+          saveAllData();
+          populateEditorRoutineSelect();
+          loadRoutineIntoEditor(currentEditingRoutineId);
+          loadRoutineIntoActiveWorkout(currentEditingRoutineId, true);
+          showToast('Scheda eliminata');
+        }
+      );
     }
 
     function applyEditedRoutineToLiveWorkout() {
       loadRoutineIntoActiveWorkout(currentEditingRoutineId, true);
-      closeRoutineManagerModal();
-      showToast('Scheda caricata nella sessione attiva!');
-    }
-
-    function saveCurrentWorkoutAsRoutine() {
-      if (state.activeWorkout.exercises.length === 0) {
-        alert('Aggiungi almeno un esercizio prima di salvare come scheda.');
-        return;
-      }
-      const name = prompt('Nome per la scheda:', state.activeWorkout.routineName || 'Mia Scheda');
-      if (!name) return;
-
-      const newRt = {
-        id: 'rt_' + Date.now(),
-        name: name.trim(),
-        exercises: state.activeWorkout.exercises.map(ex => ({
-          exId: ex.exId,
-          sets: ex.sets.length
-        }))
-      };
-      state.routines.push(newRt);
-      state.activeWorkout.routineId = newRt.id;
-      state.activeWorkout.routineName = newRt.name;
-      saveAllData();
-      renderRoutinePills();
-      showToast(`Scheda "${newRt.name}" salvata!`);
-    }
-
-    function clearCurrentWorkout() {
-      if (!confirm('Vuoi azzerare tutte le serie della sessione corrente?')) return;
-      loadRoutineIntoActiveWorkout(state.activeWorkout.routineId, true);
-      showToast('Sessione resettata');
+      document.getElementById('routineManagerModal').classList.add('hidden');
+      showToast('Scheda pronta!');
     }
 
     // --- SALVATAGGIO ALLENAMENTO NELLO STORICO ---
     function finishWorkout() {
-      // Filtriamo gli esercizi che hanno almeno una serie compilata (o spuntata)
       const cleanedExercises = [];
       let totalVol = 0;
       let totalSetsCount = 0;
 
       state.activeWorkout.exercises.forEach(ex => {
-        const validSets = ex.sets.filter(s => s.done || (parseFloat(s.kg) > 0 && parseInt(s.reps) > 0));
-        if (validSets.length > 0) {
+        const doneSets = ex.sets.filter(s => s.done);
+        if (doneSets.length > 0) {
           cleanedExercises.push({
             exId: ex.exId,
-            sets: validSets.map(s => {
-              const w = parseFloat(s.kg) || 0;
+            sets: doneSets.map(s => {
+              const w = parseNum(s.kg);
               const r = parseInt(s.reps) || 0;
               totalVol += w * r;
               totalSetsCount++;
-              return {
-                kg: w,
-                reps: r,
-                rir: s.rir !== '' ? parseInt(s.rir) : 1
-              };
+              return { kg: w, reps: r };
             })
           });
         }
       });
 
       if (cleanedExercises.length === 0) {
-        alert('Compila o spunta almeno una serie prima di salvare l\'allenamento!');
+        state.activeWorkout.exercises.forEach(ex => {
+          const filledSets = ex.sets.filter(s => parseNum(s.kg) > 0 || (parseInt(s.reps) || 0) > 0);
+          if (filledSets.length > 0) {
+            cleanedExercises.push({
+              exId: ex.exId,
+              sets: filledSets.map(s => {
+                const w = parseNum(s.kg);
+                const r = parseInt(s.reps) || 0;
+                totalVol += w * r;
+                totalSetsCount++;
+                return { kg: w, reps: r };
+              })
+            });
+          }
+        });
+      }
+
+      if (cleanedExercises.length === 0) {
+        showToast('Spunta (OK) o compila almeno una serie prima di salvare!', true);
         return;
       }
+
+      const endTimeStr = getCurrentTimeHHMM();
+      const startTimeStr = state.activeWorkout.startTime || endTimeStr;
 
       const sessionRecord = {
         id: 'sess_' + Date.now(),
         date: new Date().toISOString(),
         routineName: state.activeWorkout.routineName,
         note: state.activeWorkout.note || '',
-        durationSeconds: state.activeWorkout.elapsedSeconds || 0,
+        startTime: startTimeStr,
+        endTime: endTimeStr,
         totalVolume: Math.round(totalVol),
         totalSets: totalSetsCount,
         exercises: cleanedExercises
       };
 
       state.history.push(sessionRecord);
-      pauseWorkoutTimer();
-      stopRestTimer();
       saveAllData();
 
-      // Ricarica la scheda pulita pronta per il prossimo allenamento (con i nuovi "Precedenti" aggiornati!)
       loadRoutineIntoActiveWorkout(state.activeWorkout.routineId, true);
-      showToast('Allenamento salvato nello Storico!');
+      showToast(`Salvato! (${startTimeStr} → ${endTimeStr})`);
       switchTab('history');
     }
 
@@ -1497,8 +1402,8 @@
       if (state.history.length === 0) {
         container.innerHTML = `
           <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center space-y-2">
-            <p class="text-sm font-semibold text-slate-300">Nessun allenamento salvato</p>
-            <p class="text-xs text-slate-500">Completa le tue serie e premi "Salva" in alto a destra per registrare la sessione.</p>
+            <p class="text-sm font-semibold text-slate-300">Nessun allenamento nello storico</p>
+            <p class="text-xs text-slate-500">Completa le tue serie e premi "Salva" in alto a destra.</p>
           </div>
         `;
         return;
@@ -1508,17 +1413,28 @@
       reversed.forEach(sess => {
         const dt = new Date(sess.date);
         const dateStr = dt.toLocaleDateString('it-IT', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
-        const durMin = Math.max(1, Math.round((sess.durationSeconds || 0) / 60));
+
+        let timeLabel = '—';
+        if (sess.startTime && sess.endTime) {
+          timeLabel = `${sess.startTime} → ${sess.endTime}`;
+        } else if (sess.durationSeconds) {
+          timeLabel = `${Math.max(1, Math.round(sess.durationSeconds / 60))} min`;
+        } else {
+          timeLabel = dt.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+        }
 
         let exSummaryHtml = '';
-        sess.exercises.forEach(ex => {
+        (sess.exercises || []).forEach(ex => {
           const meta = getExerciseMeta(ex.exId);
-          const setsPills = ex.sets
-            .map(s => `<span class="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-[11px] font-mono text-slate-300">${s.kg}kg×${s.reps} <span class="text-amber-400/80">R${s.rir}</span></span>`)
+          const setsPills = (ex.sets || [])
+            .map(s => `<span class="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-[11px] font-mono text-slate-200">${s.kg}kg × ${s.reps}</span>`)
             .join(' ');
           exSummaryHtml += `
             <div class="py-1.5 border-b border-slate-800/50 last:border-0">
-              <div class="text-xs font-bold text-slate-200">${meta.name}</div>
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-200">${meta.name}</span>
+                <span class="text-[10px] text-slate-500">${(ex.sets || []).length} serie</span>
+              </div>
               <div class="flex flex-wrap gap-1 mt-1">${setsPills}</div>
             </div>
           `;
@@ -1530,26 +1446,26 @@
           <div class="flex items-start justify-between">
             <div>
               <span class="text-[11px] font-semibold text-blue-400 uppercase">${dateStr}</span>
-              <h3 class="text-base font-bold text-white">${sess.routineName}</h3>
+              <h3 class="text-base font-bold text-white">${sess.routineName || 'Allenamento'}</h3>
               ${sess.note ? `<p class="text-xs text-slate-400 italic mt-0.5">"${sess.note}"</p>` : ''}
             </div>
-            <button onclick="deleteHistorySession('${sess.id}')" class="p-1.5 text-slate-500 hover:text-rose-400">
+            <button type="button" onclick="deleteHistorySession('${sess.id}')" class="p-1.5 text-slate-500 hover:text-rose-400">
               <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>
           </div>
 
           <div class="grid grid-cols-3 gap-2 bg-slate-950/70 rounded-xl p-2.5 border border-slate-800/80 text-center">
             <div>
+              <div class="text-[10px] text-slate-400">Orario</div>
+              <div class="text-xs font-bold text-blue-300 font-mono">${timeLabel}</div>
+            </div>
+            <div>
+              <div class="text-[10px] text-slate-400">Serie Totali</div>
+              <div class="text-xs font-bold text-emerald-400">${sess.totalSets || 0}</div>
+            </div>
+            <div>
               <div class="text-[10px] text-slate-400">Volume</div>
-              <div class="text-xs font-bold text-white">${sess.totalVolume} kg</div>
-            </div>
-            <div>
-              <div class="text-[10px] text-slate-400">Serie</div>
-              <div class="text-xs font-bold text-emerald-400">${sess.totalSets}</div>
-            </div>
-            <div>
-              <div class="text-[10px] text-slate-400">Durata</div>
-              <div class="text-xs font-bold text-slate-300">${durMin} min</div>
+              <div class="text-xs font-bold text-white">${sess.totalVolume || 0} kg</div>
             </div>
           </div>
 
@@ -1559,124 +1475,289 @@
         `;
         container.appendChild(card);
       });
-      lucide.createIcons();
+      refreshIcons();
     }
 
     function deleteHistorySession(sessId) {
-      if (!confirm('Eliminare questa sessione dallo storico?')) return;
-      state.history = state.history.filter(s => s.id !== sessId);
-      saveAllData();
-      renderHistory();
+      openCustomConfirm(
+        'Elimina Sessione',
+        'Vuoi eliminare questo allenamento dallo storico?',
+        () => {
+          state.history = state.history.filter(s => s.id !== sessId);
+          saveAllData();
+          renderHistory();
+          showToast('Sessione eliminata');
+        }
+      );
     }
 
-    // --- ANALYTICS & GRAFICI ---
+    // --- ANALYTICS: GRAFICO FORZA COMBINATO (CARICO vs REPS & SERIE) ---
     function populateAnalyticsSelect() {
       const sel = document.getElementById('analyticsExerciseSelect');
       const currentVal = sel.value;
       sel.innerHTML = '';
 
-      state.exercises.forEach(ex => {
+      const exercisesWithHistory = new Set();
+      state.history.forEach(sess => {
+        (sess.exercises || []).forEach(e => exercisesWithHistory.add(e.exId));
+      });
+
+      const sortedExercises = [...state.exercises].sort((a, b) => {
+        const aHas = exercisesWithHistory.has(a.id) ? 0 : 1;
+        const bHas = exercisesWithHistory.has(b.id) ? 0 : 1;
+        return aHas - bHas;
+      });
+
+      sortedExercises.forEach(ex => {
         const opt = document.createElement('option');
         opt.value = ex.id;
-        opt.textContent = `${ex.name} (${ex.muscle})`;
+        const mark = exercisesWithHistory.has(ex.id) ? '● ' : '';
+        opt.textContent = `${mark}${ex.name} (${ex.muscle})`;
         sel.appendChild(opt);
       });
 
-      if (currentVal && state.exercises.some(e => e.id === currentVal)) {
+      if (currentVal && exercisesWithHistory.has(currentVal)) {
         sel.value = currentVal;
+      } else if (sortedExercises.length > 0) {
+        sel.value = sortedExercises[0].id;
       }
     }
 
     function renderAnalyticsCharts() {
-      const exId = document.getElementById('analyticsExerciseSelect').value;
-      const labels = [];
-      const oneRmData = [];
-      const maxWeightData = [];
+      const sel = document.getElementById('analyticsExerciseSelect');
+      if (!sel) return;
+      const exId = sel.value;
+      const points = [];
 
       state.history.forEach(sess => {
-        const found = sess.exercises.find(e => e.exId === exId);
-        if (found && found.sets.length > 0) {
+        const found = (sess.exercises || []).find(e => e.exId === exId);
+        if (found && found.sets && found.sets.length > 0) {
           const d = new Date(sess.date);
-          labels.push(d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' }));
-          let bestRM = 0;
-          let maxW = 0;
+          const dateShort = d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' });
+
+          let maxKg = 0;
+          let repsAtMaxKg = 0;
+          let best1RM = 0;
+          let totalReps = 0;
+          const setsCount = found.sets.length;
+
           found.sets.forEach(s => {
-            const rm = calcOneRM(s.kg, s.reps);
-            if (rm > bestRM) bestRM = rm;
-            if (s.kg > maxW) maxW = s.kg;
-          });
-          oneRmData.push(bestRM);
-          maxWeightData.push(maxW);
-        }
-      });
+            const w = parseNum(s.kg);
+            const r = parseInt(s.reps) || 0;
+            totalReps += r;
+            const rm = calcOneRM(w, r);
+            if (rm > best1RM) best1RM = rm;
 
-      const ctx1 = document.getElementById('strengthChart').getContext('2d');
-      if (strengthChartInstance) strengthChartInstance.destroy();
-      strengthChartInstance = new Chart(ctx1, {
-        type: 'line',
-        data: {
-          labels: labels.length ? labels : ['Nessun dato'],
-          datasets: [
-            {
-              label: '1RM Stimato (kg)',
-              data: oneRmData.length ? oneRmData : [0],
-              borderColor: '#3b82f6',
-              backgroundColor: 'rgba(59, 130, 246, 0.15)',
-              tension: 0.3,
-              fill: true
-            },
-            {
-              label: 'Carico Max (kg)',
-              data: maxWeightData.length ? maxWeightData : [0],
-              borderColor: '#10b981',
-              borderDash: [4, 4],
-              tension: 0.3
+            if (w > maxKg || (w === maxKg && r > repsAtMaxKg)) {
+              maxKg = w;
+              repsAtMaxKg = r;
             }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } } },
-          scales: {
-            x: { ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.04)' } },
-            y: { ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.04)' } }
-          }
+          });
+
+          points.push({
+            dateShort,
+            fullDate: d.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' }),
+            maxKg,
+            repsAtMaxKg,
+            best1RM,
+            setsCount,
+            totalReps,
+            setsDetail: found.sets.map(s => `${s.kg}kg×${s.reps}`).join(', ')
+          });
         }
       });
 
-      // Grafico Volume Ultime 10 sessioni
-      const recentSessions = state.history.slice(-10);
-      const volLabels = recentSessions.map(s =>
-        new Date(s.date).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' })
-      );
-      const volValues = recentSessions.map(s => s.totalVolume);
+      const labels = points.map(p => `${p.dateShort} [${p.setsCount}×${p.repsAtMaxKg}]`);
+      const maxWeightData = points.map(p => p.maxKg);
+      const oneRmData = points.map(p => p.best1RM);
+      const repsAtMaxData = points.map(p => p.repsAtMaxKg);
+      const setsCountData = points.map(p => p.setsCount);
 
-      const ctx2 = document.getElementById('volumeChart').getContext('2d');
-      if (volumeChartInstance) volumeChartInstance.destroy();
-      volumeChartInstance = new Chart(ctx2, {
+      const canvas = document.getElementById('strengthChart');
+      if (!canvas || !window.Chart) return;
+      const ctx1 = canvas.getContext('2d');
+      if (strengthChartInstance) strengthChartInstance.destroy();
+
+      strengthChartInstance = new Chart(ctx1, {
         type: 'bar',
         data: {
-          labels: volLabels.length ? volLabels : ['Nessuna sessione'],
+          labels: labels.length ? labels : ['Nessuna sessione'],
           datasets: [
             {
-              label: 'Volume (kg)',
-              data: volValues.length ? volValues : [0],
-              backgroundColor: '#6366f1',
-              borderRadius: 6
+              type: 'line',
+              label: 'Carico Max (Kg)',
+              data: maxWeightData.length ? maxWeightData : [0],
+              borderColor: '#10b981',
+              backgroundColor: '#10b981',
+              borderWidth: 3,
+              pointRadius: 5,
+              pointHoverRadius: 7,
+              tension: 0.25,
+              yAxisID: 'yKg',
+              order: 1
+            },
+            {
+              type: 'line',
+              label: '1RM Stimato (Kg)',
+              data: oneRmData.length ? oneRmData : [0],
+              borderColor: '#3b82f6',
+              backgroundColor: '#3b82f6',
+              borderDash: [4, 4],
+              borderWidth: 2,
+              pointRadius: 4,
+              tension: 0.25,
+              yAxisID: 'yKg',
+              order: 2
+            },
+            {
+              type: 'bar',
+              label: 'Reps col Carico Max',
+              data: repsAtMaxData.length ? repsAtMaxData : [0],
+              backgroundColor: 'rgba(99, 102, 241, 0.45)',
+              borderColor: 'rgba(99, 102, 241, 0.85)',
+              borderWidth: 1,
+              borderRadius: 4,
+              yAxisID: 'yReps',
+              order: 3
+            },
+            {
+              type: 'bar',
+              label: 'Serie Eseguite',
+              data: setsCountData.length ? setsCountData : [0],
+              backgroundColor: 'rgba(245, 158, 11, 0.35)',
+              borderColor: 'rgba(245, 158, 11, 0.85)',
+              borderWidth: 1,
+              borderRadius: 4,
+              yAxisID: 'yReps',
+              order: 4
             }
           ]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                afterBody: function(context) {
+                  const idx = context[0].dataIndex;
+                  const p = points[idx];
+                  if (!p) return '';
+                  const lines = [
+                    `Top Set: ${p.maxKg} kg × ${p.repsAtMaxKg} reps`,
+                    `Totale: ${p.setsCount} serie (${p.totalReps} reps tot)`
+                  ];
+                  if (idx > 0) {
+                    const prev = points[idx - 1];
+                    const dKg = +(p.maxKg - prev.maxKg).toFixed(1);
+                    const dReps = p.repsAtMaxKg - prev.repsAtMaxKg;
+                    const dSets = p.setsCount - prev.setsCount;
+                    const fKg = dKg > 0 ? `+${dKg}kg` : `${dKg}kg`;
+                    const fReps = dReps > 0 ? `+${dReps} reps` : `${dReps} reps`;
+                    const fSets = dSets > 0 ? `+${dSets} serie` : `${dSets} serie`;
+                    lines.push(`Vs prec: ${fKg} | ${fReps} | ${fSets}`);
+                  }
+                  return lines;
+                }
+              }
+            }
+          },
           scales: {
-            x: { ticks: { color: '#64748b' }, grid: { display: false } },
-            y: { ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.04)' } }
+            x: {
+              ticks: { color: '#94a3b8', font: { size: 10 } },
+              grid: { color: 'rgba(255,255,255,0.04)' }
+            },
+            yKg: {
+              type: 'linear',
+              position: 'left',
+              beginAtZero: false,
+              title: { display: true, text: 'Kg', color: '#10b981', font: { size: 10, weight: 'bold' } },
+              ticks: { color: '#10b981', font: { size: 10 } },
+              grid: { color: 'rgba(255,255,255,0.05)' }
+            },
+            yReps: {
+              type: 'linear',
+              position: 'right',
+              beginAtZero: true,
+              suggestedMax: 14,
+              title: { display: true, text: 'Reps / Serie', color: '#818cf8', font: { size: 10, weight: 'bold' } },
+              ticks: { color: '#818cf8', font: { size: 10 }, stepSize: 2 },
+              grid: { display: false }
+            }
           }
         }
       });
+
+      renderProgressionBreakdown(points);
+    }
+
+    function renderProgressionBreakdown(points) {
+      const container = document.getElementById('progressionBreakdownList');
+      container.innerHTML = '';
+
+      if (points.length === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-500 text-center py-3">Salva almeno un allenamento con questo esercizio per vedere il grafico e i confronti.</p>`;
+        return;
+      }
+
+      for (let i = points.length - 1; i >= 0; i--) {
+        const curr = points[i];
+        const prev = i > 0 ? points[i - 1] : null;
+
+        let badgesHtml = '';
+        if (prev) {
+          const diffKg = +(curr.maxKg - prev.maxKg).toFixed(1);
+          const diffReps = curr.repsAtMaxKg - prev.repsAtMaxKg;
+          const diffSets = curr.setsCount - prev.setsCount;
+
+          if (diffKg > 0) {
+            badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold">+${diffKg} kg ↑</span>`;
+          } else if (diffKg < 0) {
+            badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-400 border border-rose-500/30 text-[10px] font-bold">${diffKg} kg ↓</span>`;
+          } else {
+            badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 text-[10px] font-semibold">= kg</span>`;
+          }
+
+          if (diffReps > 0) {
+            badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold">+${diffReps} reps ↑</span>`;
+          } else if (diffReps < 0) {
+            badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[10px] font-bold">${diffReps} reps ↓</span>`;
+          } else {
+            badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 text-[10px] font-semibold">= reps</span>`;
+          }
+
+          if (diffSets > 0) {
+            badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold">+${diffSets} serie</span>`;
+          } else if (diffSets < 0) {
+            badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-400 border border-rose-500/30 text-[10px] font-bold">${diffSets} serie ↓</span>`;
+          }
+        } else {
+          badgesHtml = `<span class="px-2 py-0.5 rounded bg-slate-800 text-slate-400 text-[10px]">1ª sessione</span>`;
+        }
+
+        const item = document.createElement('div');
+        item.className = 'p-3 rounded-xl bg-slate-950/80 border border-slate-800/80 space-y-1.5';
+        item.innerHTML = `
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <span class="text-[11px] font-semibold text-blue-400">${curr.fullDate}</span>
+              <span class="text-xs font-bold text-white ml-1.5">Top: ${curr.maxKg} kg × ${curr.repsAtMaxKg}</span>
+              <span class="text-[11px] text-slate-400 ml-1">(${curr.setsCount} serie • ${curr.totalReps} reps)</span>
+            </div>
+            <span class="text-[10px] font-mono text-indigo-400 shrink-0">1RM: ${curr.best1RM}kg</span>
+          </div>
+          <div class="flex items-center justify-between gap-2">
+            <div class="text-[11px] font-mono text-slate-400 truncate">${curr.setsDetail}</div>
+            <div class="flex items-center gap-1 shrink-0">${badgesHtml}</div>
+          </div>
+        `;
+        container.appendChild(item);
+      }
     }
 
     // --- NAVIGAZIONE TABS ---
@@ -1701,17 +1782,19 @@
     // --- ESPORTAZIONE / IMPORTAZIONE ---
     function exportCSV() {
       if (state.history.length === 0) {
-        alert('Non ci sono ancora sessioni salvate da esportare.');
+        showToast('Nessuna sessione da esportare', true);
         return;
       }
-      let csv = 'Data,Scheda,Esercizio,Gruppo,Serie,Kg,Ripetizioni,RIR,1RM_Stimato\n';
+      let csv = 'Data,Ora_Inizio,Ora_Fine,Scheda,Esercizio,Gruppo,Serie,Kg,Ripetizioni,1RM_Stimato\n';
       state.history.forEach(sess => {
         const d = new Date(sess.date).toLocaleDateString('it-IT');
-        sess.exercises.forEach(ex => {
+        const st = sess.startTime || '';
+        const et = sess.endTime || '';
+        (sess.exercises || []).forEach(ex => {
           const meta = getExerciseMeta(ex.exId);
-          ex.sets.forEach((s, idx) => {
+          (ex.sets || []).forEach((s, idx) => {
             const rm = calcOneRM(s.kg, s.reps);
-            csv += `"${d}","${sess.routineName}","${meta.name}","${meta.muscle}",${idx + 1},${s.kg},${s.reps},${s.rir},${rm}\n`;
+            csv += `"${d}","${st}","${et}","${sess.routineName}","${meta.name}","${meta.muscle}",${idx + 1},${s.kg},${s.reps},${rm}\n`;
           });
         });
       });
@@ -1728,8 +1811,7 @@
       const backup = {
         exercises: state.exercises,
         routines: state.routines,
-        history: state.history,
-        settings: state.settings
+        history: state.history
       };
       const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -1749,31 +1831,38 @@
           if (data.exercises) state.exercises = data.exercises;
           if (data.routines) state.routines = data.routines;
           if (data.history) state.history = data.history;
-          if (data.settings) state.settings = data.settings;
           saveAllData();
           loadRoutineIntoActiveWorkout(state.routines[0].id, true);
-          showToast('Backup ripristinato con successo!');
+          showToast('Backup ripristinato!');
         } catch (err) {
-          alert('File JSON non valido.');
+          showToast('File JSON non valido', true);
         }
       };
       reader.readAsText(file);
     }
 
-    function factoryReset() {
-      if (!confirm('Attenzione: questo cancellerà tutte le schede personalizzate e lo storico allenamenti. Continuare?')) return;
-      localStorage.clear();
-      location.reload();
+    function askFactoryReset() {
+      openCustomConfirm(
+        'Ripristina Dati',
+        'Questo cancellerà tutte le schede personalizzate e lo storico allenamenti. Continuare?',
+        () => {
+          localStorage.clear();
+          location.reload();
+        }
+      );
     }
 
-    // --- TOAST HELPER ---
-    function showToast(msg) {
+    function showToast(msg, isWarning = false) {
       const toast = document.getElementById('toastNotification');
+      const box = document.getElementById('toastBox');
       document.getElementById('toastMessage').textContent = msg;
+      box.className = isWarning
+        ? 'bg-rose-600 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-xl flex items-center gap-2'
+        : 'bg-emerald-600 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-xl flex items-center gap-2';
       toast.classList.remove('opacity-0');
       setTimeout(() => {
         toast.classList.add('opacity-0');
-      }, 2400);
+      }, 2600);
     }
   </script>
 </body>
