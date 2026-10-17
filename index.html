@@ -99,7 +99,7 @@
     <!-- ==================== TAB 1: WORKOUT LOGGER ==================== -->
     <section id="tab-workout" class="space-y-4">
 
-      <!-- Selettore Schede Rapido -->
+      <!-- Selettore Schede Rapido (Protetto contro tocchi accidentali) -->
       <div class="space-y-2">
         <div class="flex items-center justify-between">
           <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Scheda Attiva</span>
@@ -111,7 +111,7 @@
         <div id="routinePillsContainer" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1"></div>
       </div>
 
-      <!-- Riepilogo Live Sessione (Senza Recupero) -->
+      <!-- Riepilogo Live Sessione -->
       <div class="grid grid-cols-2 gap-2.5">
         <div class="bg-slate-900/90 border border-slate-800/90 rounded-2xl p-3.5 flex items-center justify-between">
           <div>
@@ -154,9 +154,9 @@
             <i data-lucide="folder-plus" class="w-3.5 h-3.5 text-indigo-400"></i>
             Crea / Modifica Schede
           </button>
-          <button type="button" onclick="resetCurrentSessionValues()" class="py-2.5 px-3 rounded-xl bg-slate-900 border border-slate-800 text-rose-400/90 text-xs font-medium flex items-center justify-center gap-1.5 active:scale-95 transition">
+          <button type="button" onclick="askResetCurrentSessionValues()" class="py-2.5 px-3 rounded-xl bg-slate-900 border border-slate-800 text-rose-400/90 text-xs font-medium flex items-center justify-center gap-1.5 active:scale-95 transition">
             <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
-            Togli Spunte Serie
+            Azzera Sessione Attiva
           </button>
         </div>
       </div>
@@ -175,54 +175,89 @@
       <div id="historyListContainer" class="space-y-3"></div>
     </section>
 
-    <!-- ==================== TAB 3: ANALISI & GRAFICI ==================== -->
+    <!-- ==================== TAB 3: ANALISI & GRAFICI EVOLUTI ==================== -->
     <section id="tab-analytics" class="hidden space-y-4">
       <div>
-        <h2 class="text-lg font-bold text-white">Progressione Forza & Reps</h2>
-        <p class="text-xs text-slate-400">Confronto tra Carico sollevato (Kg), Ripetizioni e Serie</p>
+        <h2 class="text-lg font-bold text-white">Analisi Progressione</h2>
+        <p class="text-xs text-slate-400">Visualizza carichi, ripetizioni, serie e scambi di volume</p>
       </div>
 
-      <!-- Selettore Esercizio + Grafico Combinato -->
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3.5">
+      <!-- Selettore Esercizio -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-4">
         <div class="flex items-center justify-between gap-2">
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Seleziona Esercizio</span>
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Esercizio Analizzato</span>
+          <!-- Switch Metrica Principale -->
+          <div class="flex bg-slate-950 p-0.5 rounded-lg border border-slate-800 text-[11px] font-semibold">
+            <button type="button" id="chartModeKgBtn" onclick="setChartMetricMode('kg')" class="px-2.5 py-1 rounded-md bg-blue-600 text-white transition">
+              Carico Reale
+            </button>
+            <button type="button" id="chartModeRmBtn" onclick="setChartMetricMode('1rm')" class="px-2.5 py-1 rounded-md text-slate-400 transition">
+              Forza (1RM)
+            </button>
+          </div>
         </div>
 
-        <select id="analyticsExerciseSelect" onchange="renderAnalyticsCharts()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white font-medium focus:outline-none focus:border-blue-500">
+        <select id="analyticsExerciseSelect" onchange="renderAnalyticsCharts()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white font-semibold focus:outline-none focus:border-blue-500">
         </select>
 
-        <!-- Legenda Rapida Esplicativa -->
-        <div class="grid grid-cols-2 gap-2 text-[11px] bg-slate-950/70 border border-slate-800/80 rounded-xl p-2.5">
-          <div class="flex items-center gap-2">
-            <span class="w-3 h-1 bg-emerald-400 rounded-full inline-block"></span>
-            <span class="text-slate-300"><strong>Linea Verde:</strong> Carico Max (Kg)</span>
+        <!-- 3 KPI Cards Riassuntive dell'Esercizio -->
+        <div class="grid grid-cols-3 gap-2">
+          <div class="bg-slate-950/90 border border-slate-800/80 rounded-xl p-2.5">
+            <div class="text-[10px] text-slate-400 font-medium">Record Carico</div>
+            <div id="kpiMaxKg" class="text-sm font-bold text-white mt-0.5">—</div>
+            <div id="kpiMaxKgSub" class="text-[10px] text-slate-500">—</div>
           </div>
-          <div class="flex items-center gap-2">
-            <span class="w-3 h-1 bg-blue-400 rounded-full inline-block"></span>
-            <span class="text-slate-300"><strong>Tratteggio Blu:</strong> 1RM Stimato</span>
+          <div class="bg-slate-950/90 border border-slate-800/80 rounded-xl p-2.5">
+            <div class="text-[10px] text-slate-400 font-medium">Ultima Sessione</div>
+            <div id="kpiLastSet" class="text-sm font-bold text-blue-400 mt-0.5">—</div>
+            <div id="kpiLastSetSub" class="text-[10px] text-slate-500">—</div>
           </div>
-          <div class="flex items-center gap-2">
-            <span class="w-3 h-2.5 bg-indigo-500/60 rounded-sm inline-block"></span>
-            <span class="text-slate-300"><strong>Barre Viola:</strong> Reps sul Carico Max</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="w-3 h-2.5 bg-amber-500/50 rounded-sm inline-block"></span>
-            <span class="text-slate-300"><strong>Barre Ambra:</strong> N° Serie fatte</span>
+          <div class="bg-slate-950/90 border border-slate-800/80 rounded-xl p-2.5">
+            <div class="text-[10px] text-slate-400 font-medium">Stato / Trend</div>
+            <div id="kpiTrendBadge" class="text-xs font-bold text-slate-300 mt-0.5">—</div>
+            <div id="kpiTrendSub" class="text-[10px] text-slate-500">vs precedente</div>
           </div>
         </div>
 
-        <div class="h-64 w-full relative">
+        <!-- Legenda Semaforo dei Pallini -->
+        <div class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-2.5 space-y-1.5">
+          <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Significato dei pallini sul grafico:</div>
+          <div class="grid grid-cols-2 gap-1.5 text-[11px]">
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block shrink-0"></span>
+              <span class="text-slate-300"><strong>Verde:</strong> Progressione netta</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block shrink-0"></span>
+              <span class="text-slate-300"><strong>Giallo:</strong> +Kg ma meno Reps/Serie</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-blue-400 inline-block shrink-0"></span>
+              <span class="text-slate-300"><strong>Blu:</strong> Carico e Reps stabili</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block shrink-0"></span>
+              <span class="text-slate-300"><strong>Rosso:</strong> Calo di carico o reps</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Area Grafico Principale -->
+        <div class="h-72 w-full relative pt-1">
           <canvas id="strengthChart"></canvas>
         </div>
+        <p class="text-[10px] text-center text-slate-500">
+          Sopra ogni punto: <strong class="text-slate-300">Kg × Reps</strong> (in alto) e <strong class="text-slate-400">N° Serie</strong>. Le barre in basso indicano le ripetizioni.
+        </p>
       </div>
 
-      <!-- Registro Variazioni -->
+      <!-- Registro Analitico Sessione per Sessione -->
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Dettaglio Variazioni Sessioni</span>
-          <span class="text-[10px] text-slate-500">Confronto con prec.</span>
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Analisi Dettagliata Sessioni</span>
+          <span class="text-[10px] text-slate-500">Dal più recente</span>
         </div>
-        <div id="progressionBreakdownList" class="space-y-2"></div>
+        <div id="progressionBreakdownList" class="space-y-2.5"></div>
       </div>
     </section>
 
@@ -418,7 +453,7 @@
         <button type="button" onclick="closeCustomConfirm()" class="flex-1 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold">
           Annulla
         </button>
-        <button type="button" id="confirmModalActionBtn" class="flex-1 py-2.5 rounded-xl bg-rose-600 text-white text-xs font-semibold">
+        <button type="button" id="confirmModalActionBtn" class="flex-1 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-semibold">
           Conferma
         </button>
       </div>
@@ -519,6 +554,7 @@
       exercises: [],
       routines: [],
       history: [],
+      routineDrafts: {}, // Memoria indipendente per ogni scheda: non perdi mai le serie se cambi scheda!
       activeWorkout: {
         routineId: 'rt_upper_a',
         routineName: 'Upper Body A',
@@ -531,6 +567,7 @@
     let pickerContext = 'workout';
     let currentEditingRoutineId = null;
     let strengthChartInstance = null;
+    let chartMetricMode = 'kg'; // 'kg' oppure '1rm'
     let pendingConfirmCallback = null;
 
     function refreshIcons() {
@@ -567,11 +604,15 @@
     }
 
     // --- MODALE DI CONFERMA INTEGRATO ---
-    function openCustomConfirm(title, text, onConfirm) {
+    function openCustomConfirm(title, text, onConfirm, btnText = 'Conferma', isDanger = false) {
       document.getElementById('confirmModalTitle').textContent = title;
       document.getElementById('confirmModalText').textContent = text;
       pendingConfirmCallback = onConfirm;
       const btn = document.getElementById('confirmModalActionBtn');
+      btn.textContent = btnText;
+      btn.className = isDanger
+        ? 'flex-1 py-2.5 rounded-xl bg-rose-600 text-white text-xs font-semibold'
+        : 'flex-1 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-semibold';
       btn.onclick = () => {
         const cb = pendingConfirmCallback;
         closeCustomConfirm();
@@ -585,13 +626,14 @@
       pendingConfirmCallback = null;
     }
 
-    // --- STORAGE & PERSISTENZA ---
+    // --- STORAGE & PERSISTENZA CON BOZZE INDIPENDENTI PER SCHEDA ---
     function loadDataFromStorage() {
       try {
         const savedEx = localStorage.getItem('ironos_exercises_v2');
         const savedRt = localStorage.getItem('ironos_routines_v2');
         const savedHi = localStorage.getItem('ironos_history_v2');
         const savedAw = localStorage.getItem('ironos_active_workout_v2');
+        const savedDrafts = localStorage.getItem('ironos_routine_drafts_v2');
 
         state.exercises = savedEx ? JSON.parse(savedEx) : [...DEFAULT_EXERCISES];
         if (!Array.isArray(state.exercises) || state.exercises.length === 0) {
@@ -606,6 +648,11 @@
         state.history = savedHi ? JSON.parse(savedHi) : [];
         if (!Array.isArray(state.history)) state.history = [];
 
+        state.routineDrafts = savedDrafts ? JSON.parse(savedDrafts) : {};
+        if (!state.routineDrafts || typeof state.routineDrafts !== 'object') {
+          state.routineDrafts = {};
+        }
+
         if (savedAw) {
           const parsedAw = JSON.parse(savedAw);
           if (parsedAw && Array.isArray(parsedAw.exercises)) {
@@ -616,17 +663,20 @@
               startTime: parsedAw.startTime || null,
               exercises: parsedAw.exercises
             };
+            // Assicura che la bozza della scheda corrente sia sincronizzata
+            state.routineDrafts[state.activeWorkout.routineId] = JSON.parse(JSON.stringify(state.activeWorkout));
           } else {
-            loadRoutineIntoActiveWorkout(state.routines[0].id, false);
+            loadRoutineIntoActiveWorkout(state.routines[0].id, false, false);
           }
         } else {
-          loadRoutineIntoActiveWorkout(state.routines[0].id, false);
+          loadRoutineIntoActiveWorkout(state.routines[0].id, false, false);
         }
       } catch (e) {
         state.exercises = [...DEFAULT_EXERCISES];
         state.routines = JSON.parse(JSON.stringify(DEFAULT_ROUTINES));
         state.history = [];
-        loadRoutineIntoActiveWorkout(state.routines[0].id, false);
+        state.routineDrafts = {};
+        loadRoutineIntoActiveWorkout(state.routines[0].id, false, false);
       }
     }
 
@@ -640,6 +690,11 @@
     function saveActiveWorkoutState() {
       const noteEl = document.getElementById('workoutNoteInput');
       if (noteEl) state.activeWorkout.note = noteEl.value;
+      // Salva anche nella mappa delle bozze per questa specifica scheda!
+      if (state.activeWorkout && state.activeWorkout.routineId) {
+        state.routineDrafts[state.activeWorkout.routineId] = JSON.parse(JSON.stringify(state.activeWorkout));
+        localStorage.setItem('ironos_routine_drafts_v2', JSON.stringify(state.routineDrafts));
+      }
       localStorage.setItem('ironos_active_workout_v2', JSON.stringify(state.activeWorkout));
     }
 
@@ -655,11 +710,27 @@
       renderRoutinePills();
     }
 
+    // Verifica se una scheda ha una sessione iniziata (serie spuntate o orario di inizio attivo)
+    function getDraftCompletedSetsCount(routineId) {
+      const draft = routineId === state.activeWorkout.routineId
+        ? state.activeWorkout
+        : state.routineDrafts[routineId];
+      if (!draft || !Array.isArray(draft.exercises)) return 0;
+      let count = 0;
+      draft.exercises.forEach(ex => {
+        (ex.sets || []).forEach(s => {
+          if (s.done) count++;
+        });
+      });
+      return count;
+    }
+
     // --- GESTIONE ORARIO D'INIZIO ---
     function markOrResetStartTime() {
       state.activeWorkout.startTime = getCurrentTimeHHMM();
       saveActiveWorkoutState();
       updateStartTimeUI();
+      renderRoutinePills();
       showToast(`Inizio fissato alle ${state.activeWorkout.startTime}`);
     }
 
@@ -667,6 +738,7 @@
       state.activeWorkout.startTime = null;
       saveActiveWorkoutState();
       updateStartTimeUI();
+      renderRoutinePills();
       showToast('Orario azzerato');
     }
 
@@ -692,13 +764,14 @@
       refreshIcons();
     }
 
-    // --- CARICAMENTO E RENDERING SCHEDE ---
+    // --- CARICAMENTO E RENDERING SCHEDE (PROTETTO CONTRO PERDITA DATI) ---
     function renderRoutinePills() {
       const container = document.getElementById('routinePillsContainer');
       container.innerHTML = '';
 
       state.routines.forEach(rt => {
         const isActive = state.activeWorkout.routineId === rt.id;
+        const doneCount = getDraftCompletedSetsCount(rt.id);
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = `px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 shrink-0 ${
@@ -706,30 +779,74 @@
             ? 'bg-blue-600 text-white shadow-md shadow-blue-600/25'
             : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200'
         }`;
-        btn.innerHTML = `<span>${rt.name}</span> <span class="text-[10px] opacity-75">(${rt.exercises.length})</span>`;
+        const activeDot = doneCount > 0
+          ? `<span class="w-2 h-2 rounded-full bg-emerald-400 inline-block" title="${doneCount} serie completate in memoria"></span>`
+          : '';
+        btn.innerHTML = `${activeDot}<span>${rt.name}</span> <span class="text-[10px] opacity-75">(${rt.exercises.length})</span>`;
         btn.onclick = () => selectRoutineForWorkout(rt.id);
         container.appendChild(btn);
       });
 
       const isFree = state.activeWorkout.routineId === 'free';
+      const freeDone = getDraftCompletedSetsCount('free');
       const freeBtn = document.createElement('button');
       freeBtn.type = 'button';
-      freeBtn.className = `px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition shrink-0 ${
+      freeBtn.className = `px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 shrink-0 ${
         isFree
           ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/25'
           : 'bg-slate-900 border border-slate-800 text-slate-400'
       }`;
-      freeBtn.textContent = '+ Libero';
+      freeBtn.innerHTML = `${freeDone > 0 ? '<span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>' : ''}<span>+ Libero</span>`;
       freeBtn.onclick = () => selectRoutineForWorkout('free');
       container.appendChild(freeBtn);
     }
 
-    function selectRoutineForWorkout(routineId) {
-      if (state.activeWorkout.routineId === routineId) return;
-      loadRoutineIntoActiveWorkout(routineId, true);
+    function selectRoutineForWorkout(targetRoutineId) {
+      if (state.activeWorkout.routineId === targetRoutineId) return;
+
+      // Salva subito lo stato attuale nella bozza della scheda corrente
+      saveActiveWorkoutState();
+
+      const currentDoneSets = getDraftCompletedSetsCount(state.activeWorkout.routineId);
+      const targetRoutine = state.routines.find(r => r.id === targetRoutineId);
+      const targetName = targetRoutine ? targetRoutine.name : 'Allenamento Libero';
+
+      // Se l'utente ha serie spuntate o un orario d'inizio segnato, chiedi conferma prima di cambiare vista!
+      if (currentDoneSets > 0 || state.activeWorkout.startTime) {
+        openCustomConfirm(
+          'Cambiare scheda?',
+          `Stai eseguendo "${state.activeWorkout.routineName}" (${currentDoneSets} serie completate). Vuoi passare a "${targetName}"? I dati inseriti in ${state.activeWorkout.routineName} rimarranno comunque salvati in memoria.`,
+          () => {
+            loadRoutineIntoActiveWorkout(targetRoutineId, true, false);
+          },
+          'Passa a ' + targetName,
+          false
+        );
+      } else {
+        loadRoutineIntoActiveWorkout(targetRoutineId, true, false);
+      }
     }
 
-    function loadRoutineIntoActiveWorkout(routineId, render = true) {
+    // forceFresh = false: se esiste già una bozza per quella scheda, la ripristina senza perdere nulla!
+    function loadRoutineIntoActiveWorkout(routineId, render = true, forceFresh = false) {
+      // Se non stiamo forzando un reset e abbiamo già una bozza salvata per questa scheda, caricala!
+      if (!forceFresh && state.routineDrafts[routineId] && Array.isArray(state.routineDrafts[routineId].exercises)) {
+        const draft = state.routineDrafts[routineId];
+        const rt = state.routines.find(r => r.id === routineId);
+        // Se non è "free" e la scheda non è stata svuotata, usa la bozza
+        if (routineId === 'free' || (rt && draft.exercises.length > 0)) {
+          state.activeWorkout = JSON.parse(JSON.stringify(draft));
+          if (rt) state.activeWorkout.routineName = rt.name;
+          saveActiveWorkoutState();
+          if (render) {
+            renderRoutinePills();
+            renderActiveWorkout();
+            updateStartTimeUI();
+          }
+          return;
+        }
+      }
+
       if (routineId === 'free') {
         state.activeWorkout = {
           routineId: 'free',
@@ -845,25 +962,25 @@
               </div>
 
               <div class="col-span-4">
-                <button type="button" onclick="copyPrevToSet(${exIndex}, ${setIdx})" class="text-xs font-medium text-slate-400 hover:text-blue-400 truncate block w-full text-left">
+                <button type="button" onclick="copyPrevToSet(${exIndex},${setIdx})" class="text-xs font-medium text-slate-400 hover:text-blue-400 truncate block w-full text-left">
                   ${prevText}
                 </button>
               </div>
 
               <div class="col-span-3">
                 <input type="text" inputmode="decimal" placeholder="Kg" value="${s.kg !== undefined ? s.kg : ''}"
-                  oninput="updateSetField(${exIndex}, ${setIdx}, 'kg', this.value)"
+                  oninput="updateSetField(${exIndex},${setIdx}, 'kg', this.value)"
                   class="w-full bg-slate-900 border border-slate-700/80 rounded-lg py-1.5 px-2 text-center text-sm font-bold text-white focus:outline-none focus:border-blue-500" />
               </div>
 
               <div class="col-span-3">
                 <input type="text" inputmode="numeric" placeholder="Reps" value="${s.reps !== undefined ? s.reps : ''}"
-                  oninput="updateSetField(${exIndex}, ${setIdx}, 'reps', this.value)"
+                  oninput="updateSetField(${exIndex},${setIdx}, 'reps', this.value)"
                   class="w-full bg-slate-900 border border-slate-700/80 rounded-lg py-1.5 px-2 text-center text-sm font-bold text-white focus:outline-none focus:border-blue-500" />
               </div>
 
               <div class="col-span-1 flex justify-end">
-                <button type="button" onclick="toggleSetDone(${exIndex}, ${setIdx})"
+                <button type="button" onclick="toggleSetDone(${exIndex},${setIdx})"
                   class="w-7 h-7 rounded-lg flex items-center justify-center transition active:scale-90 ${
                     s.done
                       ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
@@ -880,8 +997,7 @@
           <div class="px-4 py-3 bg-slate-900 border-b border-slate-800/80 flex items-center justify-between gap-2">
             <div>
               <div class="flex items-center gap-2">
-                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-blue-500/15 text-blue-400 border border-blue-500/20">${meta.muscle}</span>
-                ${best1RM > 0 ? `<span class="text-[10px] font-semibold text-indigo-400">1RM: ${best1RM} kg</span>` : ''}
+                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-blue-500/15 text-blue-400 border border-blue-500/20">${meta.muscle}</span>${best1RM > 0 ? `<span class="text-[10px] font-semibold text-indigo-400">1RM: ${best1RM} kg</span>` : ''}
               </div>
               <h3 class="text-sm font-bold text-white mt-1">${meta.name}</h3>
             </div>
@@ -959,6 +1075,7 @@
       }
 
       saveActiveWorkoutState();
+      renderRoutinePills();
       renderActiveWorkout();
     }
 
@@ -1004,17 +1121,19 @@
       renderActiveWorkout();
     }
 
-    function resetCurrentSessionValues() {
-      state.activeWorkout.exercises.forEach(ex => {
-        ex.sets.forEach(s => {
-          s.done = false;
-        });
-      });
-      state.activeWorkout.startTime = null;
-      saveActiveWorkoutState();
-      renderActiveWorkout();
-      updateStartTimeUI();
-      showToast('Spunte serie azzerate');
+    function askResetCurrentSessionValues() {
+      openCustomConfirm(
+        'Azzera Sessione',
+        `Vuoi togliere tutte le spunte e ricaricare i valori predefiniti per "${state.activeWorkout.routineName}"?`,
+        () => {
+          delete state.routineDrafts[state.activeWorkout.routineId];
+          localStorage.setItem('ironos_routine_drafts_v2', JSON.stringify(state.routineDrafts));
+          loadRoutineIntoActiveWorkout(state.activeWorkout.routineId, true, true);
+          showToast('Sessione azzerata');
+        },
+        'Azzera',
+        true
+      );
     }
 
     function updateLiveMetrics() {
@@ -1101,10 +1220,12 @@
         const rt = state.routines.find(r => r.id === currentEditingRoutineId);
         if (rt) {
           rt.exercises.push({ exId: exId, sets: 3 });
+          // Aggiorna eventuale bozza di quella scheda senza perdere le serie già scritte
+          syncRoutineChangesIntoDraft(rt);
           saveAllData();
           loadRoutineIntoEditor(rt.id);
           if (state.activeWorkout.routineId === rt.id) {
-            loadRoutineIntoActiveWorkout(rt.id, true);
+            loadRoutineIntoActiveWorkout(rt.id, true, false);
           } else {
             renderRoutinePills();
           }
@@ -1155,6 +1276,52 @@
       selectExerciseFromPicker(newEx.id);
     }
 
+    // Mantiene sincronizzata la bozza quando si modifica una scheda dall'Editor Schede
+    function syncRoutineChangesIntoDraft(rt) {
+      const existingDraft = state.routineDrafts[rt.id];
+      if (!existingDraft) return;
+
+      const updatedExercises = rt.exercises.map(item => {
+        const foundInDraft = (existingDraft.exercises || []).find(e => e.exId === item.exId);
+        if (foundInDraft) {
+          // Adegua il numero di serie preservando quelle già compilate
+          const currentSets = [...foundInDraft.sets];
+          while (currentSets.length < item.sets) {
+            const last = currentSets[currentSets.length - 1] || { kg: '', reps: '' };
+            currentSets.push({ kg: last.kg, reps: last.reps, done: false });
+          }
+          while (currentSets.length > item.sets && currentSets.length > 1) {
+            currentSets.pop();
+          }
+          return { ...foundInDraft, sets: currentSets };
+        } else {
+          const prevSets = getPreviousSetsForExercise(item.exId);
+          const setsArr = [];
+          for (let i = 0; i < (item.sets || 3); i++) {
+            const prev = prevSets[i] || prevSets[prevSets.length - 1] || null;
+            setsArr.push({
+              kg: prev ? prev.kg : '',
+              reps: prev ? prev.reps : '',
+              done: false
+            });
+          }
+          return {
+            instanceId: 'inst_' + Math.random().toString(36).substring(2, 9),
+            exId: item.exId,
+            sets: setsArr
+          };
+        }
+      });
+
+      existingDraft.routineName = rt.name;
+      existingDraft.exercises = updatedExercises;
+      state.routineDrafts[rt.id] = existingDraft;
+      if (state.activeWorkout.routineId === rt.id) {
+        state.activeWorkout = JSON.parse(JSON.stringify(existingDraft));
+      }
+      localStorage.setItem('ironos_routine_drafts_v2', JSON.stringify(state.routineDrafts));
+    }
+
     // --- GESTIONE & EDITOR DELLE SCHEDE ---
     function openRoutineManagerModal() {
       if (state.routines.length === 0) {
@@ -1173,11 +1340,8 @@
 
     function closeRoutineManagerModal() {
       document.getElementById('routineManagerModal').classList.add('hidden');
-      if (state.activeWorkout.routineId === currentEditingRoutineId) {
-        loadRoutineIntoActiveWorkout(currentEditingRoutineId, true);
-      } else {
-        renderRoutinePills();
-      }
+      renderRoutinePills();
+      renderActiveWorkout();
     }
 
     function populateEditorRoutineSelect() {
@@ -1219,7 +1383,7 @@
         row.className = 'p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-2';
         row.innerHTML = `
           <div class="min-w-0 flex-1">
-            <div class="text-xs font-bold text-white truncate">${idx + 1}. ${meta.name}</div>
+            <div class="text-xs font-bold text-white truncate">${idx + 1}.${meta.name}</div>
             <div class="text-[10px] text-blue-400">${meta.muscle}</div>
           </div>
           <div class="flex items-center gap-1.5 shrink-0">
@@ -1247,9 +1411,7 @@
       const rt = state.routines.find(r => r.id === currentEditingRoutineId);
       if (!rt) return;
       rt.name = newName.trim() || 'Scheda';
-      if (state.activeWorkout.routineId === rt.id) {
-        state.activeWorkout.routineName = rt.name;
-      }
+      syncRoutineChangesIntoDraft(rt);
       saveAllData();
       populateEditorRoutineSelect();
       renderRoutinePills();
@@ -1259,6 +1421,7 @@
       const rt = state.routines.find(r => r.id === currentEditingRoutineId);
       if (!rt) return;
       rt.exercises[exIdx].sets = Math.max(1, parseInt(newSets) || 3);
+      syncRoutineChangesIntoDraft(rt);
       saveAllData();
     }
 
@@ -1270,6 +1433,7 @@
       const tmp = rt.exercises[exIdx];
       rt.exercises[exIdx] = rt.exercises[target];
       rt.exercises[target] = tmp;
+      syncRoutineChangesIntoDraft(rt);
       saveAllData();
       loadRoutineIntoEditor(rt.id);
     }
@@ -1278,6 +1442,7 @@
       const rt = state.routines.find(r => r.id === currentEditingRoutineId);
       if (!rt) return;
       rt.exercises.splice(exIdx, 1);
+      syncRoutineChangesIntoDraft(rt);
       saveAllData();
       loadRoutineIntoEditor(rt.id);
     }
@@ -1305,21 +1470,26 @@
       const rt = state.routines.find(r => r.id === currentEditingRoutineId);
       openCustomConfirm(
         'Elimina Scheda',
-        `Vuoi eliminare la scheda "${rt.name}"?`,
+        `Vuoi eliminare definitivamente la scheda "${rt.name}"?`,
         () => {
+          delete state.routineDrafts[currentEditingRoutineId];
           state.routines = state.routines.filter(r => r.id !== currentEditingRoutineId);
           currentEditingRoutineId = state.routines[0].id;
           saveAllData();
           populateEditorRoutineSelect();
           loadRoutineIntoEditor(currentEditingRoutineId);
-          loadRoutineIntoActiveWorkout(currentEditingRoutineId, true);
+          loadRoutineIntoActiveWorkout(currentEditingRoutineId, true, false);
           showToast('Scheda eliminata');
-        }
+        },
+        'Elimina',
+        true
       );
     }
 
     function applyEditedRoutineToLiveWorkout() {
-      loadRoutineIntoActiveWorkout(currentEditingRoutineId, true);
+      const rt = state.routines.find(r => r.id === currentEditingRoutineId);
+      if (rt) syncRoutineChangesIntoDraft(rt);
+      loadRoutineIntoActiveWorkout(currentEditingRoutineId, true, false);
       document.getElementById('routineManagerModal').classList.add('hidden');
       showToast('Scheda pronta!');
     }
@@ -1385,10 +1555,13 @@
       };
 
       state.history.push(sessionRecord);
+      // Pulisce la bozza della scheda appena salvata così si ricarica fresca coi nuovi "Precedenti"
+      delete state.routineDrafts[state.activeWorkout.routineId];
+      localStorage.setItem('ironos_routine_drafts_v2', JSON.stringify(state.routineDrafts));
       saveAllData();
 
-      loadRoutineIntoActiveWorkout(state.activeWorkout.routineId, true);
-      showToast(`Salvato! (${startTimeStr} → ${endTimeStr})`);
+      loadRoutineIntoActiveWorkout(state.activeWorkout.routineId, true, true);
+      showToast(`Salvato! (${startTimeStr} →${endTimeStr})`);
       switchTab('history');
     }
 
@@ -1416,7 +1589,7 @@
 
         let timeLabel = '—';
         if (sess.startTime && sess.endTime) {
-          timeLabel = `${sess.startTime} → ${sess.endTime}`;
+          timeLabel = `${sess.startTime} →${sess.endTime}`;
         } else if (sess.durationSeconds) {
           timeLabel = `${Math.max(1, Math.round(sess.durationSeconds / 60))} min`;
         } else {
@@ -1446,8 +1619,7 @@
           <div class="flex items-start justify-between">
             <div>
               <span class="text-[11px] font-semibold text-blue-400 uppercase">${dateStr}</span>
-              <h3 class="text-base font-bold text-white">${sess.routineName || 'Allenamento'}</h3>
-              ${sess.note ? `<p class="text-xs text-slate-400 italic mt-0.5">"${sess.note}"</p>` : ''}
+              <h3 class="text-base font-bold text-white">${sess.routineName \vert{}\vert{} 'Allenamento'}</h3>${sess.note ? `<p class="text-xs text-slate-400 italic mt-0.5">"${sess.note}"</p>` : ''}
             </div>
             <button type="button" onclick="deleteHistorySession('${sess.id}')" class="p-1.5 text-slate-500 hover:text-rose-400">
               <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -1487,11 +1659,27 @@
           saveAllData();
           renderHistory();
           showToast('Sessione eliminata');
-        }
+        },
+        'Elimina',
+        true
       );
     }
 
-    // --- ANALYTICS: GRAFICO FORZA COMBINATO (CARICO vs REPS & SERIE) ---
+    // --- ANALYTICS: NUOVO GRAFICO TRADINGVIEW-STYLE CON ETICHETTE SUI PUNTI ---
+    function setChartMetricMode(mode) {
+      chartMetricMode = mode;
+      const kgBtn = document.getElementById('chartModeKgBtn');
+      const rmBtn = document.getElementById('chartModeRmBtn');
+      if (mode === 'kg') {
+        kgBtn.className = 'px-2.5 py-1 rounded-md bg-blue-600 text-white transition';
+        rmBtn.className = 'px-2.5 py-1 rounded-md text-slate-400 transition';
+      } else {
+        rmBtn.className = 'px-2.5 py-1 rounded-md bg-indigo-600 text-white transition';
+        kgBtn.className = 'px-2.5 py-1 rounded-md text-slate-400 transition';
+      }
+      renderAnalyticsCharts();
+    }
+
     function populateAnalyticsSelect() {
       const sel = document.getElementById('analyticsExerciseSelect');
       const currentVal = sel.value;
@@ -1521,6 +1709,80 @@
       } else if (sortedExercises.length > 0) {
         sel.value = sortedExercises[0].id;
       }
+    }
+
+    // Classifica ogni sessione rispetto alla precedente per colore e spiegazione
+    function classifyProgressionPoint(curr, prev) {
+      if (!prev) {
+        return {
+          status: 'first',
+          color: '#3b82f6', // Blu
+          label: '1ª Sessione',
+          verdict: 'Prima sessione di riferimento registrata per questo esercizio.'
+        };
+      }
+
+      const dKg = +(curr.maxKg - prev.maxKg).toFixed(1);
+      const dReps = curr.repsAtMaxKg - prev.repsAtMaxKg;
+      const dSets = curr.setsCount - prev.setsCount;
+
+      // Caso 1: Aumento di carico MA calo di ripetizioni o di serie (Trade-off!)
+      if (dKg > 0 && (dReps < 0 || dSets < 0)) {
+        const parts = [];
+        if (dReps < 0) parts.push(`${Math.abs(dReps)} reps in meno sul carico max`);
+        if (dSets < 0) parts.push(`${Math.abs(dSets)} serie in meno`);
+        return {
+          status: 'tradeoff',
+          color: '#f59e0b', // Giallo Ambra
+          label: '+Kg / -Reps',
+          verdict: `⚖️ Carico aumentato (+${dKg} kg), ma con${parts.join(' e ')}.`
+        };
+      }
+
+      // Caso 2: Progressione netta (Più Kg a parità/più reps, oppure stesso Kg con più reps o più serie)
+      if (
+        (dKg > 0 && dReps >= 0 && dSets >= 0) ||
+        (dKg === 0 && (dReps > 0 || (dReps === 0 && dSets > 0)))
+      ) {
+        const gains = [];
+        if (dKg > 0) gains.push(`+${dKg} kg`);
+        if (dReps > 0) gains.push(`+${dReps} ripetizioni`);
+        if (dSets > 0) gains.push(`+${dSets} serie`);
+        return {
+          status: 'progress',
+          color: '#10b981', // Verde Smeraldo
+          label: 'Progressione ↑',
+          verdict: `🚀 Sovraccarico progressivo riuscito: ${gains.join(', ')}!`
+        };
+      }
+
+      // Caso 3: Stallo / Mantenimento esatto
+      if (dKg === 0 && dReps === 0 && dSets === 0) {
+        return {
+          status: 'same',
+          color: '#3b82f6', // Blu
+          label: 'Stabile =',
+          verdict: '🟰 Performance identica alla sessione precedente (carico, serie e reps invariati).'
+        };
+      }
+
+      // Caso 4: Calo di carico ma aumento di ripetizioni/serie (Volume / Back-off)
+      if (dKg < 0 && (dReps > 0 || dSets > 0)) {
+        return {
+          status: 'volume_shift',
+          color: '#f59e0b', // Ambra
+          label: '-Kg / +Reps',
+          verdict: `🔄 Carico ridotto (${dKg} kg) ma compensato con più ripetizioni/serie.`
+        };
+      }
+
+      // Caso 5: Calo netto
+      return {
+        status: 'drop',
+        color: '#f43f5e', // Rosso
+        label: 'Calo ↓',
+        verdict: `📉 Leggero calo rispetto alla sessione precedente (${dKg} kg,${dReps >= 0 ? '+' + dReps : dReps} reps).`
+      };
     }
 
     function renderAnalyticsCharts() {
@@ -1562,80 +1824,169 @@
             best1RM,
             setsCount,
             totalReps,
-            setsDetail: found.sets.map(s => `${s.kg}kg×${s.reps}`).join(', ')
+            setsDetail: found.sets.map(s => `${s.kg}kg×${s.reps}`).join(' • ')
           });
         }
       });
 
-      const labels = points.map(p => `${p.dateShort} [${p.setsCount}×${p.repsAtMaxKg}]`);
-      const maxWeightData = points.map(p => p.maxKg);
-      const oneRmData = points.map(p => p.best1RM);
-      const repsAtMaxData = points.map(p => p.repsAtMaxKg);
-      const setsCountData = points.map(p => p.setsCount);
+      // Arricchisce ogni punto con la classificazione semaforo
+      points.forEach((p, idx) => {
+        const prev = idx > 0 ? points[idx - 1] : null;
+        p.analysis = classifyProgressionPoint(p, prev);
+      });
+
+      updateAnalyticsKPIs(points);
 
       const canvas = document.getElementById('strengthChart');
       if (!canvas || !window.Chart) return;
-      const ctx1 = canvas.getContext('2d');
+      const ctx = canvas.getContext('2d');
       if (strengthChartInstance) strengthChartInstance.destroy();
 
-      strengthChartInstance = new Chart(ctx1, {
+      if (points.length === 0) {
+        strengthChartInstance = new Chart(ctx, {
+          type: 'line',
+          data: { labels: ['Nessun dato'], datasets: [{ data: [0] }] },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+        renderProgressionBreakdown([]);
+        return;
+      }
+
+      const labels = points.map(p => p.dateShort);
+      const primaryLineData = points.map(p => chartMetricMode === 'kg' ? p.maxKg : p.best1RM);
+      const repsBarData = points.map(p => p.repsAtMaxKg);
+      const pointColors = points.map(p => p.analysis.color);
+
+      const minLineVal = Math.min(...primaryLineData);
+      const maxLineVal = Math.max(...primaryLineData);
+      const span = Math.max(5, maxLineVal - minLineVal);
+
+      // Sfondo sfumato sotto la linea principale
+      const gradient = ctx.createLinearGradient(0, 0, 0, 230);
+      if (chartMetricMode === 'kg') {
+        gradient.addColorStop(0, 'rgba(59, 130, 246, 0.28)');
+        gradient.addColorStop(0.75, 'rgba(59, 130, 246, 0.0)');
+      } else {
+        gradient.addColorStop(0, 'rgba(99, 102, 241, 0.28)');
+        gradient.addColorStop(0.75, 'rgba(99, 102, 241, 0.0)');
+      }
+
+      // Plugin personalizzato che disegna le targhette "85kg × 6 (3s)" sopra ogni singolo pallino
+      const directPointLabelsPlugin = {
+        id: 'directPointLabels',
+        afterDatasetsDraw(chart) {
+          const { ctx } = chart;
+          const meta = chart.getDatasetMeta(0);
+          if (!meta || !meta.data) return;
+
+          ctx.save();
+          meta.data.forEach((element, index) => {
+            const p = points[index];
+            if (!p) return;
+
+            const x = element.x;
+            const y = element.y;
+
+            const topText = chartMetricMode === 'kg'
+              ? `${p.maxKg}kg × ${p.repsAtMaxKg}`
+              : `1RM ${p.best1RM}kg`;
+            const subText = chartMetricMode === 'kg'
+              ? `${p.setsCount} serie`
+              : `${p.maxKg}kg×${p.repsAtMaxKg} (${p.setsCount}s)`;
+
+            ctx.font = 'bold 10px -apple-system, BlinkMacSystemFont, sans-serif';
+            const w1 = ctx.measureText(topText).width;
+            ctx.font = '600 9px -apple-system, BlinkMacSystemFont, sans-serif';
+            const w2 = ctx.measureText(subText).width;
+
+            const boxW = Math.max(w1, w2) + 10;
+            const boxH = 26;
+
+            // Evita che l'etichetta esca dai bordi sinistro/destro o superiore del canvas
+            const chartArea = chart.chartArea;
+            let drawX = x - boxW / 2;
+            if (drawX < chartArea.left + 2) drawX = chartArea.left + 2;
+            if (drawX + boxW > chartArea.right - 2) drawX = chartArea.right - boxW - 2;
+
+            let drawY = y - boxH - 10;
+            if (drawY < chartArea.top + 2) drawY = y + 10;
+
+            // Riquadro scuro con bordo del colore del semaforo
+            ctx.fillStyle = 'rgba(9, 13, 22, 0.92)';
+            ctx.strokeStyle = p.analysis.color;
+            ctx.lineWidth = 1.2;
+
+            ctx.beginPath();
+            ctx.roundRect(drawX, drawY, boxW, boxH, 6);
+            ctx.fill();
+            ctx.stroke();
+
+            // Testo principale (Kg x Reps)
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 10px -apple-system, BlinkMacSystemFont, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(topText, drawX + boxW / 2, drawY + 11);
+
+            // Sottotesto (N° serie)
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '600 9px -apple-system, BlinkMacSystemFont, sans-serif';
+            ctx.fillText(subText, drawX + boxW / 2, drawY + 22);
+          });
+          ctx.restore();
+        }
+      };
+
+      strengthChartInstance = new Chart(ctx, {
         type: 'bar',
+        plugins: [directPointLabelsPlugin],
         data: {
-          labels: labels.length ? labels : ['Nessuna sessione'],
+          labels: labels,
           datasets: [
             {
               type: 'line',
-              label: 'Carico Max (Kg)',
-              data: maxWeightData.length ? maxWeightData : [0],
-              borderColor: '#10b981',
-              backgroundColor: '#10b981',
+              label: chartMetricMode === 'kg' ? 'Carico Max (Kg)' : '1RM Stimato (Kg)',
+              data: primaryLineData,
+              borderColor: chartMetricMode === 'kg' ? '#3b82f6' : '#818cf8',
+              backgroundColor: gradient,
+              fill: true,
               borderWidth: 3,
-              pointRadius: 5,
-              pointHoverRadius: 7,
-              tension: 0.25,
+              pointBackgroundColor: pointColors,
+              pointBorderColor: '#090d16',
+              pointBorderWidth: 2,
+              pointRadius: 6,
+              pointHoverRadius: 8,
+              tension: 0.3,
               yAxisID: 'yKg',
               order: 1
             },
             {
-              type: 'line',
-              label: '1RM Stimato (Kg)',
-              data: oneRmData.length ? oneRmData : [0],
-              borderColor: '#3b82f6',
-              backgroundColor: '#3b82f6',
-              borderDash: [4, 4],
-              borderWidth: 2,
-              pointRadius: 4,
-              tension: 0.25,
-              yAxisID: 'yKg',
+              type: 'bar',
+              label: 'Ripetizioni sul Carico Max',
+              data: repsBarData,
+              backgroundColor: points.map(p =>
+                p.analysis.status === 'tradeoff'
+                  ? 'rgba(245, 158, 11, 0.35)'
+                  : 'rgba(99, 102, 241, 0.28)'
+              ),
+              borderColor: points.map(p =>
+                p.analysis.status === 'tradeoff'
+                  ? 'rgba(245, 158, 11, 0.8)'
+                  : 'rgba(99, 102, 241, 0.65)'
+              ),
+              borderWidth: 1,
+              borderRadius: 5,
+              barPercentage: 0.45,
+              yAxisID: 'yReps',
               order: 2
-            },
-            {
-              type: 'bar',
-              label: 'Reps col Carico Max',
-              data: repsAtMaxData.length ? repsAtMaxData : [0],
-              backgroundColor: 'rgba(99, 102, 241, 0.45)',
-              borderColor: 'rgba(99, 102, 241, 0.85)',
-              borderWidth: 1,
-              borderRadius: 4,
-              yAxisID: 'yReps',
-              order: 3
-            },
-            {
-              type: 'bar',
-              label: 'Serie Eseguite',
-              data: setsCountData.length ? setsCountData : [0],
-              backgroundColor: 'rgba(245, 158, 11, 0.35)',
-              borderColor: 'rgba(245, 158, 11, 0.85)',
-              borderWidth: 1,
-              borderRadius: 4,
-              yAxisID: 'yReps',
-              order: 4
             }
           ]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          layout: {
+            padding: { top: 34, right: 8, left: 4, bottom: 0 }
+          },
           interaction: {
             mode: 'index',
             intersect: false
@@ -1643,50 +1994,57 @@
           plugins: {
             legend: { display: false },
             tooltip: {
+              backgroundColor: 'rgba(15, 23, 42, 0.96)',
+              titleColor: '#f8fafc',
+              bodyColor: '#cbd5e1',
+              borderColor: '#334155',
+              borderWidth: 1,
+              padding: 10,
               callbacks: {
-                afterBody: function(context) {
-                  const idx = context[0].dataIndex;
-                  const p = points[idx];
+                title: function(context) {
+                  const p = points[context[0].dataIndex];
+                  return p ? `${p.fullDate} —${p.analysis.label}` : '';
+                },
+                label: function(context) {
+                  const p = points[context.dataIndex];
                   if (!p) return '';
-                  const lines = [
-                    `Top Set: ${p.maxKg} kg × ${p.repsAtMaxKg} reps`,
-                    `Totale: ${p.setsCount} serie (${p.totalReps} reps tot)`
-                  ];
-                  if (idx > 0) {
-                    const prev = points[idx - 1];
-                    const dKg = +(p.maxKg - prev.maxKg).toFixed(1);
-                    const dReps = p.repsAtMaxKg - prev.repsAtMaxKg;
-                    const dSets = p.setsCount - prev.setsCount;
-                    const fKg = dKg > 0 ? `+${dKg}kg` : `${dKg}kg`;
-                    const fReps = dReps > 0 ? `+${dReps} reps` : `${dReps} reps`;
-                    const fSets = dSets > 0 ? `+${dSets} serie` : `${dSets} serie`;
-                    lines.push(`Vs prec: ${fKg} | ${fReps} | ${fSets}`);
+                  if (context.datasetIndex === 0) {
+                    return `Top Set: ${p.maxKg} kg × ${p.repsAtMaxKg} reps (1RM:${p.best1RM} kg)`;
                   }
-                  return lines;
+                  return `Volume: ${p.setsCount} serie (${p.totalReps} reps totali)`;
+                },
+                afterBody: function(context) {
+                  const p = points[context[0].dataIndex];
+                  return p ? [`Tutte le serie: ${p.setsDetail}`] : [];
                 }
               }
             }
           },
           scales: {
             x: {
-              ticks: { color: '#94a3b8', font: { size: 10 } },
+              ticks: { color: '#94a3b8', font: { size: 11, weight: '600' } },
               grid: { color: 'rgba(255,255,255,0.04)' }
             },
+            // Asse sinistro per i Kg: posizionato nella metà medio-alta del grafico
             yKg: {
               type: 'linear',
               position: 'left',
-              beginAtZero: false,
-              title: { display: true, text: 'Kg', color: '#10b981', font: { size: 10, weight: 'bold' } },
-              ticks: { color: '#10b981', font: { size: 10 } },
+              min: Math.max(0, Math.floor(minLineVal - span * 0.45)),
+              max: Math.ceil(maxLineVal + span * 0.35),
+              ticks: {
+                color: '#64748b',
+                font: { size: 10 },
+                callback: v => v + ' kg'
+              },
               grid: { color: 'rgba(255,255,255,0.05)' }
             },
+            // Asse destro per le ripetizioni: confinato nel 25% inferiore del grafico (stile TradingView)
             yReps: {
               type: 'linear',
               position: 'right',
-              beginAtZero: true,
-              suggestedMax: 14,
-              title: { display: true, text: 'Reps / Serie', color: '#818cf8', font: { size: 10, weight: 'bold' } },
-              ticks: { color: '#818cf8', font: { size: 10 }, stepSize: 2 },
+              min: 0,
+              max: Math.max(35, Math.max(...repsBarData) * 3.5),
+              display: false,
               grid: { display: false }
             }
           }
@@ -1696,12 +2054,60 @@
       renderProgressionBreakdown(points);
     }
 
+    function updateAnalyticsKPIs(points) {
+      const maxKgEl = document.getElementById('kpiMaxKg');
+      const maxKgSubEl = document.getElementById('kpiMaxKgSub');
+      const lastSetEl = document.getElementById('kpiLastSet');
+      const lastSetSubEl = document.getElementById('kpiLastSetSub');
+      const trendBadgeEl = document.getElementById('kpiTrendBadge');
+      const trendSubEl = document.getElementById('kpiTrendSub');
+
+      if (points.length === 0) {
+        maxKgEl.textContent = '—';
+        maxKgSubEl.textContent = 'Nessun dato';
+        lastSetEl.textContent = '—';
+        lastSetSubEl.textContent = '—';
+        trendBadgeEl.textContent = '—';
+        trendBadgeEl.className = 'text-xs font-bold text-slate-400 mt-0.5';
+        trendSubEl.textContent = '—';
+        return;
+      }
+
+      // Trova Record Carico
+      let prPoint = points[0];
+      points.forEach(p => {
+        if (p.maxKg > prPoint.maxKg || (p.maxKg === prPoint.maxKg && p.repsAtMaxKg > prPoint.repsAtMaxKg)) {
+          prPoint = p;
+        }
+      });
+
+      const last = points[points.length - 1];
+
+      maxKgEl.textContent = `${prPoint.maxKg} kg × ${prPoint.repsAtMaxKg}`;
+      maxKgSubEl.textContent = `1RM: ${prPoint.best1RM} kg (${prPoint.dateShort})`;
+
+      lastSetEl.textContent = `${last.maxKg} kg × ${last.repsAtMaxKg}`;
+      lastSetSubEl.textContent = `${last.setsCount} serie • ${last.totalReps} reps`;
+
+      trendBadgeEl.textContent = last.analysis.label;
+      if (last.analysis.status === 'progress') {
+        trendBadgeEl.className = 'text-xs font-bold text-emerald-400 mt-0.5';
+      } else if (last.analysis.status === 'tradeoff' || last.analysis.status === 'volume_shift') {
+        trendBadgeEl.className = 'text-xs font-bold text-amber-400 mt-0.5';
+      } else if (last.analysis.status === 'drop') {
+        trendBadgeEl.className = 'text-xs font-bold text-rose-400 mt-0.5';
+      } else {
+        trendBadgeEl.className = 'text-xs font-bold text-blue-400 mt-0.5';
+      }
+      trendSubEl.textContent = points.length > 1 ? `vs ${points[points.length - 2].dateShort}` : '1ª sessione';
+    }
+
     function renderProgressionBreakdown(points) {
       const container = document.getElementById('progressionBreakdownList');
       container.innerHTML = '';
 
       if (points.length === 0) {
-        container.innerHTML = `<p class="text-xs text-slate-500 text-center py-3">Salva almeno un allenamento con questo esercizio per vedere il grafico e i confronti.</p>`;
+        container.innerHTML = `<p class="text-xs text-slate-500 text-center py-3">Salva almeno un allenamento con questo esercizio per vedere il grafico e l'analisi.</p>`;
         return;
       }
 
@@ -1732,16 +2138,25 @@
           }
 
           if (diffSets > 0) {
-            badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold">+${diffSets} serie</span>`;
+            badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold">+${diffSets} serie ↑</span>`;
           } else if (diffSets < 0) {
-            badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-400 border border-rose-500/30 text-[10px] font-bold">${diffSets} serie ↓</span>`;
+            badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[10px] font-bold">${diffSets} serie ↓</span>`;
           }
         } else {
           badgesHtml = `<span class="px-2 py-0.5 rounded bg-slate-800 text-slate-400 text-[10px]">1ª sessione</span>`;
         }
 
+        const borderAccent =
+          curr.analysis.status === 'tradeoff'
+            ? 'border-l-4 border-l-amber-400'
+            : curr.analysis.status === 'progress'
+            ? 'border-l-4 border-l-emerald-400'
+            : curr.analysis.status === 'drop'
+            ? 'border-l-4 border-l-rose-500'
+            : 'border-l-4 border-l-blue-500';
+
         const item = document.createElement('div');
-        item.className = 'p-3 rounded-xl bg-slate-950/80 border border-slate-800/80 space-y-1.5';
+        item.className = `p-3.5 rounded-xl bg-slate-950/90 border border-slate-800/80 ${borderAccent} space-y-2`;
         item.innerHTML = `
           <div class="flex items-center justify-between gap-2">
             <div>
@@ -1749,11 +2164,16 @@
               <span class="text-xs font-bold text-white ml-1.5">Top: ${curr.maxKg} kg × ${curr.repsAtMaxKg}</span>
               <span class="text-[11px] text-slate-400 ml-1">(${curr.setsCount} serie • ${curr.totalReps} reps)</span>
             </div>
-            <span class="text-[10px] font-mono text-indigo-400 shrink-0">1RM: ${curr.best1RM}kg</span>
-          </div>
-          <div class="flex items-center justify-between gap-2">
-            <div class="text-[11px] font-mono text-slate-400 truncate">${curr.setsDetail}</div>
             <div class="flex items-center gap-1 shrink-0">${badgesHtml}</div>
+          </div>
+
+          <p class="text-[11px] text-slate-300 leading-snug bg-slate-900/90 px-2.5 py-1.5 rounded-lg border border-slate-800/60">
+            ${curr.analysis.verdict}
+          </p>
+
+          <div class="flex items-center justify-between text-[11px] font-mono text-slate-400 pt-0.5">
+            <span class="truncate">Serie: ${curr.setsDetail}</span>
+            <span class="text-indigo-400 shrink-0 ml-2">1RM: ${curr.best1RM}kg</span>
           </div>
         `;
         container.appendChild(item);
@@ -1811,7 +2231,8 @@
       const backup = {
         exercises: state.exercises,
         routines: state.routines,
-        history: state.history
+        history: state.history,
+        routineDrafts: state.routineDrafts
       };
       const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -1831,9 +2252,10 @@
           if (data.exercises) state.exercises = data.exercises;
           if (data.routines) state.routines = data.routines;
           if (data.history) state.history = data.history;
+          if (data.routineDrafts) state.routineDrafts = data.routineDrafts;
           saveAllData();
-          loadRoutineIntoActiveWorkout(state.routines[0].id, true);
-          showToast('Backup ripristinato!');
+          loadRoutineIntoActiveWorkout(state.routines[0].id, true, false);
+          showToast('Backup ripristinato con successo!');
         } catch (err) {
           showToast('File JSON non valido', true);
         }
@@ -1848,7 +2270,9 @@
         () => {
           localStorage.clear();
           location.reload();
-        }
+        },
+        'Cancella Tutto',
+        true
       );
     }
 
