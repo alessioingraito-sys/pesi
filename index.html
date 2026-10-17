@@ -8,51 +8,27 @@
   <meta name="apple-mobile-web-app-title" content="IronOS" />
   <meta name="theme-color" content="#090d16" />
   <title>IronOS — Gym Tracker</title>
-
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-
   <style>
-    :root {
-      --sat: env(safe-area-inset-top, 0px);
-      --sab: env(safe-area-inset-bottom, 0px);
-    }
-    * {
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-    }
-    input, textarea, select {
-      user-select: text;
-      font-size: 16px !important;
-    }
+    :root { --sat: env(safe-area-inset-top, 0px); --sab: env(safe-area-inset-bottom, 0px); }
+    * { -webkit-tap-highlight-color: transparent; user-select: none; }
+    input, textarea, select { user-select: text; font-size: 16px !important; }
     body {
-      background-color: #090d16;
-      color: #f1f5f9;
+      background-color: #090d16; color: #f1f5f9;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
       overscroll-behavior-y: none;
-      padding-top: max(12px, var(--sat));
-      padding-bottom: calc(88px + var(--sab));
+      padding-top: max(12px, var(--sat)); padding-bottom: calc(88px + var(--sab));
     }
-    .ios-blur {
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-    }
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
-    .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
+    .ios-blur { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
-  <!-- TOP HEADER -->
+  <!-- HEADER -->
   <header class="sticky top-0 z-30 bg-[#090d16]/90 ios-blur border-b border-slate-800/80 px-4 py-3">
     <div class="max-w-lg mx-auto flex items-center justify-between gap-2">
       <div class="flex items-center gap-2.5">
@@ -62,15 +38,12 @@
         <div>
           <div class="flex items-center gap-2">
             <h1 class="text-base font-bold tracking-tight text-white">IronOS</h1>
-            <span id="sessionStatusBadge" class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">
-              Pronto
-            </span>
+            <span id="sessionStatusBadge" class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">Pronto</span>
           </div>
           <p id="currentDateDisplay" class="text-[11px] text-slate-400"></p>
         </div>
       </div>
 
-      <!-- Orario Inizio & Pulsante Salva -->
       <div class="flex items-center gap-2">
         <div class="flex items-center bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1.5 gap-2">
           <button type="button" onclick="markOrResetStartTime()" class="text-left flex items-center gap-1.5 active:scale-95 transition">
@@ -84,7 +57,6 @@
             <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
           </button>
         </div>
-
         <button type="button" onclick="finishWorkout()" class="bg-blue-600 hover:bg-blue-500 active:scale-95 transition text-white font-semibold text-xs px-3.5 py-2.5 rounded-xl shadow-lg shadow-blue-600/25 flex items-center gap-1.5">
           <i data-lucide="check-circle-2" class="w-4 h-4"></i>
           <span>Salva</span>
@@ -96,22 +68,18 @@
   <!-- CONTENUTO PRINCIPALE -->
   <main class="flex-1 max-w-lg w-full mx-auto px-4 pt-4 space-y-5">
 
-    <!-- ==================== TAB 1: WORKOUT LOGGER ==================== -->
+    <!-- TAB 1: ALLENAMENTO -->
     <section id="tab-workout" class="space-y-4">
-
-      <!-- Selettore Schede Rapido (Protetto contro tocchi accidentali) -->
       <div class="space-y-2">
         <div class="flex items-center justify-between">
           <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Scheda Attiva</span>
           <button type="button" onclick="openRoutineManagerModal()" class="text-xs font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-1">
-            <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i>
-            Gestisci / Modifica Schede
+            <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i> Gestisci / Modifica Schede
           </button>
         </div>
         <div id="routinePillsContainer" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1"></div>
       </div>
 
-      <!-- Riepilogo Live Sessione -->
       <div class="grid grid-cols-2 gap-2.5">
         <div class="bg-slate-900/90 border border-slate-800/90 rounded-2xl p-3.5 flex items-center justify-between">
           <div>
@@ -133,36 +101,29 @@
         </div>
       </div>
 
-      <!-- Note Sessione -->
       <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl px-3.5 py-2.5 flex items-center gap-2.5">
         <i data-lucide="file-text" class="w-4 h-4 text-slate-400 shrink-0"></i>
-        <input id="workoutNoteInput" type="text" oninput="saveActiveWorkoutState()" placeholder="Note sessione (es. Panca pesante, ottimo focus...)" class="w-full bg-transparent text-xs text-slate-200 placeholder-slate-500 focus:outline-none" />
+        <input id="workoutNoteInput" type="text" oninput="updateNoteField(this.value)" placeholder="Note sessione (es. Panca pesante, ottimo focus...)" class="w-full bg-transparent text-xs text-slate-200 placeholder-slate-500 focus:outline-none" />
       </div>
 
-      <!-- Lista Esercizi della Sessione -->
       <div id="workoutExercisesContainer" class="space-y-4"></div>
 
-      <!-- Pulsanti Azione Fondo Scheda -->
       <div class="pt-2 space-y-2.5">
         <button type="button" onclick="openExercisePicker('workout')" class="w-full py-3.5 rounded-2xl border border-dashed border-blue-500/50 bg-blue-500/10 hover:bg-blue-500/15 active:scale-[0.99] transition text-blue-400 font-semibold text-sm flex items-center justify-center gap-2">
-          <i data-lucide="plus-circle" class="w-4 h-4"></i>
-          Aggiungi Esercizio
+          <i data-lucide="plus-circle" class="w-4 h-4"></i> Aggiungi Esercizio
         </button>
-
         <div class="grid grid-cols-2 gap-2.5">
           <button type="button" onclick="openRoutineManagerModal()" class="py-2.5 px-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 text-xs font-medium flex items-center justify-center gap-1.5 active:scale-95 transition">
-            <i data-lucide="folder-plus" class="w-3.5 h-3.5 text-indigo-400"></i>
-            Crea / Modifica Schede
+            <i data-lucide="folder-plus" class="w-3.5 h-3.5 text-indigo-400"></i> Crea / Modifica Schede
           </button>
           <button type="button" onclick="askResetCurrentSessionValues()" class="py-2.5 px-3 rounded-xl bg-slate-900 border border-slate-800 text-rose-400/90 text-xs font-medium flex items-center justify-center gap-1.5 active:scale-95 transition">
-            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
-            Azzera Sessione Attiva
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Azzera Sessione Attiva
           </button>
         </div>
       </div>
     </section>
 
-    <!-- ==================== TAB 2: STORICO SESSIONI ==================== -->
+    <!-- TAB 2: STORICO -->
     <section id="tab-history" class="hidden space-y-4">
       <div class="flex items-center justify-between">
         <div>
@@ -171,36 +132,27 @@
         </div>
         <span id="historyCountBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-800 text-slate-300">0 sessioni</span>
       </div>
-
       <div id="historyListContainer" class="space-y-3"></div>
     </section>
 
-    <!-- ==================== TAB 3: ANALISI & GRAFICI EVOLUTI ==================== -->
+    <!-- TAB 3: ANALISI & GRAFICI -->
     <section id="tab-analytics" class="hidden space-y-4">
       <div>
         <h2 class="text-lg font-bold text-white">Analisi Progressione</h2>
-        <p class="text-xs text-slate-400">Visualizza carichi, ripetizioni, serie e scambi di volume</p>
+        <p class="text-xs text-slate-400">Confronto tra Carico (Kg), Ripetizioni e Serie eseguite</p>
       </div>
 
-      <!-- Selettore Esercizio -->
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-4">
         <div class="flex items-center justify-between gap-2">
           <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Esercizio Analizzato</span>
-          <!-- Switch Metrica Principale -->
           <div class="flex bg-slate-950 p-0.5 rounded-lg border border-slate-800 text-[11px] font-semibold">
-            <button type="button" id="chartModeKgBtn" onclick="setChartMetricMode('kg')" class="px-2.5 py-1 rounded-md bg-blue-600 text-white transition">
-              Carico Reale
-            </button>
-            <button type="button" id="chartModeRmBtn" onclick="setChartMetricMode('1rm')" class="px-2.5 py-1 rounded-md text-slate-400 transition">
-              Forza (1RM)
-            </button>
+            <button type="button" id="chartModeKgBtn" onclick="setChartMetricMode('kg')" class="px-2.5 py-1 rounded-md bg-blue-600 text-white transition">Carico Reale</button>
+            <button type="button" id="chartModeRmBtn" onclick="setChartMetricMode('1rm')" class="px-2.5 py-1 rounded-md text-slate-400 transition">Forza (1RM)</button>
           </div>
         </div>
 
-        <select id="analyticsExerciseSelect" onchange="renderAnalyticsCharts()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white font-semibold focus:outline-none focus:border-blue-500">
-        </select>
+        <select id="analyticsExerciseSelect" onchange="renderAnalyticsCharts()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white font-semibold focus:outline-none focus:border-blue-500"></select>
 
-        <!-- 3 KPI Cards Riassuntive dell'Esercizio -->
         <div class="grid grid-cols-3 gap-2">
           <div class="bg-slate-950/90 border border-slate-800/80 rounded-xl p-2.5">
             <div class="text-[10px] text-slate-400 font-medium">Record Carico</div>
@@ -219,39 +171,22 @@
           </div>
         </div>
 
-        <!-- Legenda Semaforo dei Pallini -->
         <div class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-2.5 space-y-1.5">
-          <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Significato dei pallini sul grafico:</div>
+          <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Colore dei pallini sul grafico:</div>
           <div class="grid grid-cols-2 gap-1.5 text-[11px]">
-            <div class="flex items-center gap-1.5">
-              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block shrink-0"></span>
-              <span class="text-slate-300"><strong>Verde:</strong> Progressione netta</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block shrink-0"></span>
-              <span class="text-slate-300"><strong>Giallo:</strong> +Kg ma meno Reps/Serie</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <span class="w-2.5 h-2.5 rounded-full bg-blue-400 inline-block shrink-0"></span>
-              <span class="text-slate-300"><strong>Blu:</strong> Carico e Reps stabili</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block shrink-0"></span>
-              <span class="text-slate-300"><strong>Rosso:</strong> Calo di carico o reps</span>
-            </div>
+            <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block shrink-0"></span><span class="text-slate-300"><strong>Verde:</strong> Progressione</span></div>
+            <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block shrink-0"></span><span class="text-slate-300"><strong>Giallo:</strong> +Kg ma -Reps/Serie</span></div>
+            <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-400 inline-block shrink-0"></span><span class="text-slate-300"><strong>Blu:</strong> Carico/Reps stabili</span></div>
+            <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block shrink-0"></span><span class="text-slate-300"><strong>Rosso:</strong> Calo carico/reps</span></div>
           </div>
         </div>
 
-        <!-- Area Grafico Principale -->
         <div class="h-72 w-full relative pt-1">
           <canvas id="strengthChart"></canvas>
         </div>
-        <p class="text-[10px] text-center text-slate-500">
-          Sopra ogni punto: <strong class="text-slate-300">Kg × Reps</strong> (in alto) e <strong class="text-slate-400">N° Serie</strong>. Le barre in basso indicano le ripetizioni.
-        </p>
+        <p class="text-[10px] text-center text-slate-500">Sopra ogni punto: <strong class="text-slate-300">Kg × Reps</strong> e <strong class="text-slate-400">N° Serie</strong>. Le barre in basso indicano le ripetizioni.</p>
       </div>
 
-      <!-- Registro Analitico Sessione per Sessione -->
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
         <div class="flex items-center justify-between">
           <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Analisi Dettagliata Sessioni</span>
@@ -261,94 +196,56 @@
       </div>
     </section>
 
-    <!-- ==================== TAB 4: DATI & IMPOSTAZIONI ==================== -->
+    <!-- TAB 4: OPZIONI -->
     <section id="tab-settings" class="hidden space-y-4">
       <div>
         <h2 class="text-lg font-bold text-white">Gestione Dati & Schede</h2>
         <p class="text-xs text-slate-400">Esporta i tuoi dati su iOS o personalizza l'archivio</p>
       </div>
 
-      <!-- Gestione Schede -->
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
-            <i data-lucide="layout-list" class="w-5 h-5"></i>
-          </div>
+          <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400"><i data-lucide="layout-list" class="w-5 h-5"></i></div>
           <div class="flex-1">
             <h3 class="text-sm font-bold text-white">Editor Schede di Allenamento</h3>
             <p class="text-xs text-slate-400">Crea nuove schede, aggiungi esercizi o cambia l'ordine</p>
           </div>
         </div>
-        <button type="button" onclick="openRoutineManagerModal()" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition">
-          Apri Gestione Schede
-        </button>
+        <button type="button" onclick="openRoutineManagerModal()" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition">Apri Gestione Schede</button>
       </div>
 
-      <!-- Esportazione CSV / JSON -->
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
-        <h3 class="text-sm font-bold text-white flex items-center gap-2">
-          <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i>
-          Esporta Allenamenti
-        </h3>
-        <p class="text-xs text-slate-400">Scarica un file CSV apribile con Excel / Numbers su iPhone o fai un backup completo JSON.</p>
+        <h3 class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="download" class="w-4 h-4 text-emerald-400"></i> Esporta Allenamenti</h3>
+        <p class="text-xs text-slate-400">Scarica un file CSV per Excel / Numbers o fai un backup completo JSON.</p>
         <div class="grid grid-cols-2 gap-2.5">
-          <button type="button" onclick="exportCSV()" class="py-2.5 px-3 rounded-xl bg-emerald-600/20 border border-emerald-500/30 text-emerald-300 font-semibold text-xs flex items-center justify-center gap-1.5">
-            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
-            Esporta CSV
-          </button>
-          <button type="button" onclick="exportJSON()" class="py-2.5 px-3 rounded-xl bg-blue-600/20 border border-blue-500/30 text-blue-300 font-semibold text-xs flex items-center justify-center gap-1.5">
-            <i data-lucide="file-json" class="w-4 h-4"></i>
-            Backup JSON
-          </button>
+          <button type="button" onclick="exportCSV()" class="py-2.5 px-3 rounded-xl bg-emerald-600/20 border border-emerald-500/30 text-emerald-300 font-semibold text-xs flex items-center justify-center gap-1.5"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Esporta CSV</button>
+          <button type="button" onclick="exportJSON()" class="py-2.5 px-3 rounded-xl bg-blue-600/20 border border-blue-500/30 text-blue-300 font-semibold text-xs flex items-center justify-center gap-1.5"><i data-lucide="file-json" class="w-4 h-4"></i> Backup JSON</button>
         </div>
       </div>
 
-      <!-- Importazione Backup -->
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
-        <h3 class="text-sm font-bold text-white flex items-center gap-2">
-          <i data-lucide="upload" class="w-4 h-4 text-amber-400"></i>
-          Ripristina Backup JSON
-        </h3>
+        <h3 class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="upload" class="w-4 h-4 text-amber-400"></i> Ripristina Backup JSON</h3>
         <input type="file" id="importJsonInput" accept=".json" onchange="importJSON(event)" class="block w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-200" />
       </div>
 
-      <!-- Reset Totale -->
       <div class="bg-slate-900 border border-rose-900/40 rounded-2xl p-4 space-y-3">
-        <h3 class="text-sm font-bold text-rose-400 flex items-center gap-2">
-          <i data-lucide="alert-triangle" class="w-4 h-4"></i>
-          Zona Pericolo
-        </h3>
-        <button type="button" onclick="askFactoryReset()" class="w-full py-2.5 rounded-xl bg-rose-600/15 border border-rose-500/30 text-rose-400 font-semibold text-xs">
-          Ripristina Dati di Fabbrica
-        </button>
+        <h3 class="text-sm font-bold text-rose-400 flex items-center gap-2"><i data-lucide="alert-triangle" class="w-4 h-4"></i> Zona Pericolo</h3>
+        <button type="button" onclick="askFactoryReset()" class="w-full py-2.5 rounded-xl bg-rose-600/15 border border-rose-500/30 text-rose-400 font-semibold text-xs">Ripristina Dati di Fabbrica</button>
       </div>
     </section>
-
   </main>
 
-  <!-- BOTTOM NAVIGATION BAR -->
+  <!-- BARRA DI NAVIGAZIONE INFERIORE -->
   <nav class="fixed bottom-0 left-0 right-0 z-30 bg-[#090d16]/95 ios-blur border-t border-slate-800/80" style="padding-bottom: var(--sab);">
     <div class="max-w-lg mx-auto grid grid-cols-4 h-16">
-      <button type="button" onclick="switchTab('workout')" id="nav-workout" class="flex flex-col items-center justify-center gap-1 text-blue-400">
-        <i data-lucide="dumbbell" class="w-5 h-5"></i>
-        <span class="text-[10px] font-semibold">Allenamento</span>
-      </button>
-      <button type="button" onclick="switchTab('history')" id="nav-history" class="flex flex-col items-center justify-center gap-1 text-slate-400">
-        <i data-lucide="calendar-clock" class="w-5 h-5"></i>
-        <span class="text-[10px] font-semibold">Storico</span>
-      </button>
-      <button type="button" onclick="switchTab('analytics')" id="nav-analytics" class="flex flex-col items-center justify-center gap-1 text-slate-400">
-        <i data-lucide="line-chart" class="w-5 h-5"></i>
-        <span class="text-[10px] font-semibold">Progressi</span>
-      </button>
-      <button type="button" onclick="switchTab('settings')" id="nav-settings" class="flex flex-col items-center justify-center gap-1 text-slate-400">
-        <i data-lucide="settings" class="w-5 h-5"></i>
-        <span class="text-[10px] font-semibold">Opzioni</span>
-      </button>
+      <button type="button" onclick="switchTab('workout')" id="nav-workout" class="flex flex-col items-center justify-center gap-1 text-blue-400"><i data-lucide="dumbbell" class="w-5 h-5"></i><span class="text-[10px] font-semibold">Allenamento</span></button>
+      <button type="button" onclick="switchTab('history')" id="nav-history" class="flex flex-col items-center justify-center gap-1 text-slate-400"><i data-lucide="calendar-clock" class="w-5 h-5"></i><span class="text-[10px] font-semibold">Storico</span></button>
+      <button type="button" onclick="switchTab('analytics')" id="nav-analytics" class="flex flex-col items-center justify-center gap-1 text-slate-400"><i data-lucide="line-chart" class="w-5 h-5"></i><span class="text-[10px] font-semibold">Progressi</span></button>
+      <button type="button" onclick="switchTab('settings')" id="nav-settings" class="flex flex-col items-center justify-center gap-1 text-slate-400"><i data-lucide="settings" class="w-5 h-5"></i><span class="text-[10px] font-semibold">Opzioni</span></button>
     </div>
   </nav>
 
-  <!-- MODALE 1: GESTIONE & MODIFICA SCHEDE (Z-INDEX 60) -->
+  <!-- MODALE 1: GESTIONE SCHEDE -->
   <div id="routineManagerModal" class="fixed inset-0 z-[60] bg-black/80 ios-blur hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-slate-900 border-t sm:border border-slate-800 rounded-t-3xl sm:rounded-3xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden">
       <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
@@ -356,31 +253,20 @@
           <h3 class="text-base font-bold text-white">Gestione Schede</h3>
           <p class="text-xs text-slate-400">Modifica gli esercizi della scheda o creane una nuova</p>
         </div>
-        <button type="button" onclick="closeRoutineManagerModal()" class="p-2 rounded-full bg-slate-800 text-slate-400 hover:text-white">
-          <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
+        <button type="button" onclick="closeRoutineManagerModal()" class="p-2 rounded-full bg-slate-800 text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
       </div>
-
       <div class="p-4 overflow-y-auto space-y-4 flex-1">
         <div class="flex items-center gap-2">
-          <select id="editorRoutineSelect" onchange="loadRoutineIntoEditor(this.value)" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm font-semibold text-white focus:outline-none focus:border-blue-500">
-          </select>
-          <button type="button" onclick="createNewRoutineInEditor()" class="px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1 shrink-0">
-            <i data-lucide="plus" class="w-4 h-4"></i>
-            Nuova
-          </button>
+          <select id="editorRoutineSelect" onchange="loadRoutineIntoEditor(this.value)" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm font-semibold text-white focus:outline-none focus:border-blue-500"></select>
+          <button type="button" onclick="createNewRoutineInEditor()" class="px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1 shrink-0"><i data-lucide="plus" class="w-4 h-4"></i> Nuova</button>
         </div>
-
         <div>
           <label class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Nome della Scheda</label>
           <div class="flex items-center gap-2 mt-1">
             <input type="text" id="editorRoutineNameInput" oninput="updateEditorRoutineName(this.value)" placeholder="Es. Upper Body A" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white font-medium focus:outline-none focus:border-blue-500" />
-            <button type="button" onclick="deleteRoutineFromEditor()" class="p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400" title="Elimina scheda">
-              <i data-lucide="trash-2" class="w-4 h-4"></i>
-            </button>
+            <button type="button" onclick="deleteRoutineFromEditor()" class="p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
           </div>
         </div>
-
         <div class="space-y-2">
           <div class="flex items-center justify-between">
             <label class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Esercizi nella Scheda</label>
@@ -388,23 +274,19 @@
           </div>
           <div id="editorExercisesList" class="space-y-2"></div>
         </div>
-
         <button type="button" onclick="openExercisePicker('routineEditor')" class="w-full py-3 rounded-xl border border-dashed border-blue-500/50 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 font-semibold text-xs flex items-center justify-center gap-2">
-          <i data-lucide="plus-circle" class="w-4 h-4"></i>
-          Aggiungi Esercizio a questa Scheda
+          <i data-lucide="plus-circle" class="w-4 h-4"></i> Aggiungi Esercizio a questa Scheda
         </button>
       </div>
-
-      <div class="p-4 border-t border-slate-800 bg-slate-950/60 flex items-center gap-2.5">
+      <div class="p-4 border-t border-slate-800 bg-slate-950/60">
         <button type="button" onclick="applyEditedRoutineToLiveWorkout()" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs flex items-center justify-center gap-1.5">
-          <i data-lucide="check" class="w-4 h-4"></i>
-          Applica e Torna all'Allenamento
+          <i data-lucide="check" class="w-4 h-4"></i> Applica e Torna all'Allenamento
         </button>
       </div>
     </div>
   </div>
 
-  <!-- MODALE 2: SELETTORE ESERCIZI (Z-INDEX 90) -->
+  <!-- MODALE 2: SELETTORE ESERCIZI -->
   <div id="exercisePickerModal" class="fixed inset-0 z-[90] bg-black/85 ios-blur hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-slate-900 border-t sm:border border-slate-800 rounded-t-3xl sm:rounded-3xl w-full max-w-lg max-h-[88vh] flex flex-col overflow-hidden shadow-2xl">
       <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
@@ -412,55 +294,39 @@
           <h3 class="text-base font-bold text-white">Scegli Esercizio</h3>
           <p id="pickerTargetSubtitle" class="text-xs text-blue-400">Aggiungi alla scheda</p>
         </div>
-        <button type="button" onclick="closeExercisePicker()" class="p-2 rounded-full bg-slate-800 text-slate-400 hover:text-white">
-          <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
+        <button type="button" onclick="closeExercisePicker()" class="p-2 rounded-full bg-slate-800 text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
       </div>
-
       <div class="p-4 border-b border-slate-800 space-y-3 bg-slate-950/40">
         <div class="relative">
           <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3"></i>
-          <input type="text" id="exerciseSearchInput" oninput="renderExercisePickerList()" placeholder="Cerca esercizio (es. Hack Squat, Panca...)" class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" />
+          <input type="text" id="exerciseSearchInput" oninput="renderExercisePickerList()" placeholder="Cerca esercizio..." class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" />
         </div>
-
         <div class="flex items-center gap-2">
           <input type="text" id="customExerciseNameInput" placeholder="Oppure crea nuovo esercizio..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500" />
           <select id="customExerciseMuscleSelect" class="bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-2 text-xs text-slate-200 focus:outline-none">
-            <option value="Petto">Petto</option>
-            <option value="Dorso">Dorso</option>
-            <option value="Gambe">Gambe</option>
-            <option value="Spalle">Spalle</option>
-            <option value="Bicipiti">Bicipiti</option>
-            <option value="Tricipiti">Tricipiti</option>
-            <option value="Core">Core</option>
+            <option value="Petto">Petto</option><option value="Dorso">Dorso</option><option value="Gambe">Gambe</option>
+            <option value="Spalle">Spalle</option><option value="Bicipiti">Bicipiti</option><option value="Tricipiti">Tricipiti</option><option value="Core">Core</option>
           </select>
-          <button type="button" onclick="createAndSelectCustomExercise()" class="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shrink-0">
-            + Crea
-          </button>
+          <button type="button" onclick="createAndSelectCustomExercise()" class="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shrink-0">+ Crea</button>
         </div>
       </div>
-
       <div id="exercisePickerList" class="p-4 overflow-y-auto space-y-2 flex-1"></div>
     </div>
   </div>
 
-  <!-- MODALE 3: FINESTRA DI CONFERMA INTEGRATA -->
+  <!-- MODALE 3: FINESTRA DI CONFERMA -->
   <div id="customConfirmModal" class="fixed inset-0 z-[110] bg-black/80 ios-blur hidden flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xs p-5 space-y-4 text-center shadow-2xl">
       <h4 id="confirmModalTitle" class="text-sm font-bold text-white">Conferma</h4>
       <p id="confirmModalText" class="text-xs text-slate-300 leading-relaxed"></p>
       <div class="flex items-center gap-2 pt-1">
-        <button type="button" onclick="closeCustomConfirm()" class="flex-1 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold">
-          Annulla
-        </button>
-        <button type="button" id="confirmModalActionBtn" class="flex-1 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-semibold">
-          Conferma
-        </button>
+        <button type="button" onclick="closeCustomConfirm()" class="flex-1 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold">Annulla</button>
+        <button type="button" id="confirmModalActionBtn" class="flex-1 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-semibold">Conferma</button>
       </div>
     </div>
   </div>
 
-  <!-- TOAST DI NOTIFICA -->
+  <!-- TOAST -->
   <div id="toastNotification" class="fixed top-16 left-1/2 -translate-x-1/2 z-[120] pointer-events-none opacity-0 transition-opacity duration-200 w-max max-w-[90vw]">
     <div id="toastBox" class="bg-emerald-600 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-xl flex items-center gap-2">
       <i data-lucide="check-circle" class="w-4 h-4 shrink-0"></i>
@@ -468,9 +334,6 @@
     </div>
   </div>
 
-  <!-- ========================================================================= -->
-  <!-- LOGICA JAVASCRIPT                                                         -->
-  <!-- ========================================================================= -->
   <script>
     const DEFAULT_EXERCISES = [
       { id: 'ex_bench_db', name: 'Panca Piana Manubri', muscle: 'Petto' },
@@ -499,125 +362,54 @@
     ];
 
     const DEFAULT_ROUTINES = [
-      {
-        id: 'rt_upper_a',
-        name: 'Upper Body A',
-        exercises: [
-          { exId: 'ex_bench_db', sets: 3 },
-          { exId: 'ex_lat_machine', sets: 3 },
-          { exId: 'ex_incline_db', sets: 3 },
-          { exId: 'ex_chest_row', sets: 3 },
-          { exId: 'ex_lat_raise', sets: 4 },
-          { exId: 'ex_bayesian', sets: 3 },
-          { exId: 'ex_pushdown', sets: 3 }
-        ]
-      },
-      {
-        id: 'rt_lower_a',
-        name: 'Lower Body A',
-        exercises: [
-          { exId: 'ex_hack_squat', sets: 3 },
-          { exId: 'ex_rdl', sets: 3 },
-          { exId: 'ex_leg_press', sets: 3 },
-          { exId: 'ex_leg_ext', sets: 3 },
-          { exId: 'ex_leg_curl', sets: 3 },
-          { exId: 'ex_calf', sets: 4 }
-        ]
-      },
-      {
-        id: 'rt_push',
-        name: 'Push Day',
-        exercises: [
-          { exId: 'ex_bench_db', sets: 4 },
-          { exId: 'ex_incline_db', sets: 3 },
-          { exId: 'ex_shoulder_db', sets: 3 },
-          { exId: 'ex_lat_raise', sets: 4 },
-          { exId: 'ex_overhead_ext', sets: 3 },
-          { exId: 'ex_pushdown', sets: 3 }
-        ]
-      },
-      {
-        id: 'rt_pull',
-        name: 'Pull Day',
-        exercises: [
-          { exId: 'ex_lat_machine', sets: 4 },
-          { exId: 'ex_chest_row', sets: 3 },
-          { exId: 'ex_pulley', sets: 3 },
-          { exId: 'ex_rear_delt', sets: 4 },
-          { exId: 'ex_bayesian', sets: 3 },
-          { exId: 'ex_hammer', sets: 3 }
-        ]
-      }
+      { id: 'rt_upper_a', name: 'Upper Body A', exercises: [{ exId: 'ex_bench_db', sets: 3 }, { exId: 'ex_lat_machine', sets: 3 }, { exId: 'ex_incline_db', sets: 3 }, { exId: 'ex_chest_row', sets: 3 }, { exId: 'ex_lat_raise', sets: 4 }, { exId: 'ex_bayesian', sets: 3 }, { exId: 'ex_pushdown', sets: 3 }] },
+      { id: 'rt_lower_a', name: 'Lower Body A', exercises: [{ exId: 'ex_hack_squat', sets: 3 }, { exId: 'ex_rdl', sets: 3 }, { exId: 'ex_leg_press', sets: 3 }, { exId: 'ex_leg_ext', sets: 3 }, { exId: 'ex_leg_curl', sets: 3 }, { exId: 'ex_calf', sets: 4 }] },
+      { id: 'rt_push', name: 'Push Day', exercises: [{ exId: 'ex_bench_db', sets: 4 }, { exId: 'ex_incline_db', sets: 3 }, { exId: 'ex_shoulder_db', sets: 3 }, { exId: 'ex_lat_raise', sets: 4 }, { exId: 'ex_overhead_ext', sets: 3 }, { exId: 'ex_pushdown', sets: 3 }] },
+      { id: 'rt_pull', name: 'Pull Day', exercises: [{ exId: 'ex_lat_machine', sets: 4 }, { exId: 'ex_chest_row', sets: 3 }, { exId: 'ex_pulley', sets: 3 }, { exId: 'ex_rear_delt', sets: 4 }, { exId: 'ex_bayesian', sets: 3 }, { exId: 'ex_hammer', sets: 3 }] }
     ];
 
     let state = {
-      exercises: [],
-      routines: [],
-      history: [],
-      routineDrafts: {}, // Memoria indipendente per ogni scheda: non perdi mai le serie se cambi scheda!
-      activeWorkout: {
-        routineId: 'rt_upper_a',
-        routineName: 'Upper Body A',
-        note: '',
-        startTime: null,
-        exercises: []
-      }
+      exercises: [], routines: [], history: [], routineDrafts: {},
+      activeWorkout: { routineId: 'rt_upper_a', routineName: 'Upper Body A', note: '', startTime: null, exercises: [] }
     };
 
     let pickerContext = 'workout';
     let currentEditingRoutineId = null;
     let strengthChartInstance = null;
-    let chartMetricMode = 'kg'; // 'kg' oppure '1rm'
+    let chartMetricMode = 'kg';
     let pendingConfirmCallback = null;
 
     function refreshIcons() {
-      if (window.lucide && typeof window.lucide.createIcons === 'function') {
-        window.lucide.createIcons();
-      }
+      try { if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons(); } catch (e) {}
     }
 
     function parseNum(val) {
       if (val === undefined || val === null || val === '') return 0;
-      const clean = String(val).replace(',', '.').trim();
-      const n = parseFloat(clean);
+      const n = parseFloat(String(val).replace(',', '.').trim());
       return isNaN(n) ? 0 : n;
     }
 
     window.addEventListener('DOMContentLoaded', () => {
       loadDataFromStorage();
-      updateHeaderDate();
+      document.getElementById('currentDateDisplay').textContent = new Date().toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' });
       renderRoutinePills();
       renderActiveWorkout();
       updateStartTimeUI();
       refreshIcons();
     });
 
-    function updateHeaderDate() {
-      const now = new Date();
-      const opts = { weekday: 'short', day: 'numeric', month: 'short' };
-      document.getElementById('currentDateDisplay').textContent = now.toLocaleDateString('it-IT', opts);
-    }
-
     function getCurrentTimeHHMM() {
-      const now = new Date();
-      return now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+      return new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
     }
 
-    // --- MODALE DI CONFERMA INTEGRATO ---
     function openCustomConfirm(title, text, onConfirm, btnText = 'Conferma', isDanger = false) {
       document.getElementById('confirmModalTitle').textContent = title;
       document.getElementById('confirmModalText').textContent = text;
       pendingConfirmCallback = onConfirm;
       const btn = document.getElementById('confirmModalActionBtn');
       btn.textContent = btnText;
-      btn.className = isDanger
-        ? 'flex-1 py-2.5 rounded-xl bg-rose-600 text-white text-xs font-semibold'
-        : 'flex-1 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-semibold';
-      btn.onclick = () => {
-        const cb = pendingConfirmCallback;
-        closeCustomConfirm();
-        if (cb) cb();
-      };
+      btn.className = isDanger ? 'flex-1 py-2.5 rounded-xl bg-rose-600 text-white text-xs font-semibold' : 'flex-1 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-semibold';
+      btn.onclick = () => { const cb = pendingConfirmCallback; closeCustomConfirm(); if (cb) cb(); };
       document.getElementById('customConfirmModal').classList.remove('hidden');
     }
 
@@ -626,7 +418,6 @@
       pendingConfirmCallback = null;
     }
 
-    // --- STORAGE & PERSISTENZA CON BOZZE INDIPENDENTI PER SCHEDA ---
     function loadDataFromStorage() {
       try {
         const savedEx = localStorage.getItem('ironos_exercises_v2');
@@ -636,22 +427,16 @@
         const savedDrafts = localStorage.getItem('ironos_routine_drafts_v2');
 
         state.exercises = savedEx ? JSON.parse(savedEx) : [...DEFAULT_EXERCISES];
-        if (!Array.isArray(state.exercises) || state.exercises.length === 0) {
-          state.exercises = [...DEFAULT_EXERCISES];
-        }
+        if (!Array.isArray(state.exercises) || !state.exercises.length) state.exercises = [...DEFAULT_EXERCISES];
 
         state.routines = savedRt ? JSON.parse(savedRt) : JSON.parse(JSON.stringify(DEFAULT_ROUTINES));
-        if (!Array.isArray(state.routines) || state.routines.length === 0) {
-          state.routines = JSON.parse(JSON.stringify(DEFAULT_ROUTINES));
-        }
+        if (!Array.isArray(state.routines) || !state.routines.length) state.routines = JSON.parse(JSON.stringify(DEFAULT_ROUTINES));
 
         state.history = savedHi ? JSON.parse(savedHi) : [];
         if (!Array.isArray(state.history)) state.history = [];
 
         state.routineDrafts = savedDrafts ? JSON.parse(savedDrafts) : {};
-        if (!state.routineDrafts || typeof state.routineDrafts !== 'object') {
-          state.routineDrafts = {};
-        }
+        if (!state.routineDrafts || typeof state.routineDrafts !== 'object') state.routineDrafts = {};
 
         if (savedAw) {
           const parsedAw = JSON.parse(savedAw);
@@ -663,7 +448,6 @@
               startTime: parsedAw.startTime || null,
               exercises: parsedAw.exercises
             };
-            // Assicura che la bozza della scheda corrente sia sincronizzata
             state.routineDrafts[state.activeWorkout.routineId] = JSON.parse(JSON.stringify(state.activeWorkout));
           } else {
             loadRoutineIntoActiveWorkout(state.routines[0].id, false, false);
@@ -680,6 +464,11 @@
       }
     }
 
+    function updateNoteField(val) {
+      state.activeWorkout.note = val;
+      saveActiveWorkoutState();
+    }
+
     function saveAllData() {
       localStorage.setItem('ironos_exercises_v2', JSON.stringify(state.exercises));
       localStorage.setItem('ironos_routines_v2', JSON.stringify(state.routines));
@@ -688,9 +477,6 @@
     }
 
     function saveActiveWorkoutState() {
-      const noteEl = document.getElementById('workoutNoteInput');
-      if (noteEl) state.activeWorkout.note = noteEl.value;
-      // Salva anche nella mappa delle bozze per questa specifica scheda!
       if (state.activeWorkout && state.activeWorkout.routineId) {
         state.routineDrafts[state.activeWorkout.routineId] = JSON.parse(JSON.stringify(state.activeWorkout));
         localStorage.setItem('ironos_routine_drafts_v2', JSON.stringify(state.routineDrafts));
@@ -702,30 +488,19 @@
       if (state.activeWorkout.routineId === 'free') return;
       const rt = state.routines.find(r => r.id === state.activeWorkout.routineId);
       if (!rt) return;
-      rt.exercises = state.activeWorkout.exercises.map(ex => ({
-        exId: ex.exId,
-        sets: ex.sets.length
-      }));
+      rt.exercises = state.activeWorkout.exercises.map(ex => ({ exId: ex.exId, sets: ex.sets.length }));
       localStorage.setItem('ironos_routines_v2', JSON.stringify(state.routines));
       renderRoutinePills();
     }
 
-    // Verifica se una scheda ha una sessione iniziata (serie spuntate o orario di inizio attivo)
     function getDraftCompletedSetsCount(routineId) {
-      const draft = routineId === state.activeWorkout.routineId
-        ? state.activeWorkout
-        : state.routineDrafts[routineId];
+      const draft = routineId === state.activeWorkout.routineId ? state.activeWorkout : state.routineDrafts[routineId];
       if (!draft || !Array.isArray(draft.exercises)) return 0;
       let count = 0;
-      draft.exercises.forEach(ex => {
-        (ex.sets || []).forEach(s => {
-          if (s.done) count++;
-        });
-      });
+      draft.exercises.forEach(ex => (ex.sets || []).forEach(s => { if (s.done) count++; }));
       return count;
     }
 
-    // --- GESTIONE ORARIO D'INIZIO ---
     function markOrResetStartTime() {
       state.activeWorkout.startTime = getCurrentTimeHHMM();
       saveActiveWorkoutState();
@@ -747,7 +522,6 @@
       const display = document.getElementById('startTimeDisplay');
       const badge = document.getElementById('sessionStatusBadge');
       const clearBtn = document.getElementById('clearStartTimeBtn');
-
       if (st) {
         display.textContent = st;
         display.className = 'text-xs font-mono font-bold text-emerald-400 leading-tight mt-0.5';
@@ -764,24 +538,16 @@
       refreshIcons();
     }
 
-    // --- CARICAMENTO E RENDERING SCHEDE (PROTETTO CONTRO PERDITA DATI) ---
     function renderRoutinePills() {
       const container = document.getElementById('routinePillsContainer');
       container.innerHTML = '';
-
       state.routines.forEach(rt => {
         const isActive = state.activeWorkout.routineId === rt.id;
         const doneCount = getDraftCompletedSetsCount(rt.id);
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = `px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 shrink-0 ${
-          isActive
-            ? 'bg-blue-600 text-white shadow-md shadow-blue-600/25'
-            : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200'
-        }`;
-        const activeDot = doneCount > 0
-          ? `<span class="w-2 h-2 rounded-full bg-emerald-400 inline-block" title="${doneCount} serie completate in memoria"></span>`
-          : '';
+        btn.className = `px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 shrink-0 ${isActive ? 'bg-blue-600 text-white shadow-md shadow-blue-600/25' : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200'}`;
+        const activeDot = doneCount > 0 ? `<span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>` : '';
         btn.innerHTML = `${activeDot}<span>${rt.name}</span> <span class="text-[10px] opacity-75">(${rt.exercises.length})</span>`;
         btn.onclick = () => selectRoutineForWorkout(rt.id);
         container.appendChild(btn);
@@ -791,11 +557,7 @@
       const freeDone = getDraftCompletedSetsCount('free');
       const freeBtn = document.createElement('button');
       freeBtn.type = 'button';
-      freeBtn.className = `px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 shrink-0 ${
-        isFree
-          ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/25'
-          : 'bg-slate-900 border border-slate-800 text-slate-400'
-      }`;
+      freeBtn.className = `px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 shrink-0 ${isFree ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/25' : 'bg-slate-900 border border-slate-800 text-slate-400'}`;
       freeBtn.innerHTML = `${freeDone > 0 ? '<span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>' : ''}<span>+ Libero</span>`;
       freeBtn.onclick = () => selectRoutineForWorkout('free');
       container.appendChild(freeBtn);
@@ -803,22 +565,16 @@
 
     function selectRoutineForWorkout(targetRoutineId) {
       if (state.activeWorkout.routineId === targetRoutineId) return;
-
-      // Salva subito lo stato attuale nella bozza della scheda corrente
       saveActiveWorkoutState();
-
       const currentDoneSets = getDraftCompletedSetsCount(state.activeWorkout.routineId);
       const targetRoutine = state.routines.find(r => r.id === targetRoutineId);
       const targetName = targetRoutine ? targetRoutine.name : 'Allenamento Libero';
 
-      // Se l'utente ha serie spuntate o un orario d'inizio segnato, chiedi conferma prima di cambiare vista!
       if (currentDoneSets > 0 || state.activeWorkout.startTime) {
         openCustomConfirm(
           'Cambiare scheda?',
-          `Stai eseguendo "${state.activeWorkout.routineName}" (${currentDoneSets} serie completate). Vuoi passare a "${targetName}"? I dati inseriti in ${state.activeWorkout.routineName} rimarranno comunque salvati in memoria.`,
-          () => {
-            loadRoutineIntoActiveWorkout(targetRoutineId, true, false);
-          },
+          `Stai eseguendo "${state.activeWorkout.routineName}" (${currentDoneSets} serie completate). Vuoi passare a "${targetName}"? Le tue serie di ${state.activeWorkout.routineName} resteranno salvate in memoria.`,
+          () => loadRoutineIntoActiveWorkout(targetRoutineId, true, false),
           'Passa a ' + targetName,
           false
         );
@@ -827,68 +583,39 @@
       }
     }
 
-    // forceFresh = false: se esiste già una bozza per quella scheda, la ripristina senza perdere nulla!
     function loadRoutineIntoActiveWorkout(routineId, render = true, forceFresh = false) {
-      // Se non stiamo forzando un reset e abbiamo già una bozza salvata per questa scheda, caricala!
       if (!forceFresh && state.routineDrafts[routineId] && Array.isArray(state.routineDrafts[routineId].exercises)) {
         const draft = state.routineDrafts[routineId];
         const rt = state.routines.find(r => r.id === routineId);
-        // Se non è "free" e la scheda non è stata svuotata, usa la bozza
         if (routineId === 'free' || (rt && draft.exercises.length > 0)) {
           state.activeWorkout = JSON.parse(JSON.stringify(draft));
           if (rt) state.activeWorkout.routineName = rt.name;
           saveActiveWorkoutState();
-          if (render) {
-            renderRoutinePills();
-            renderActiveWorkout();
-            updateStartTimeUI();
-          }
+          if (render) { renderRoutinePills(); renderActiveWorkout(); updateStartTimeUI(); }
           return;
         }
       }
 
       if (routineId === 'free') {
-        state.activeWorkout = {
-          routineId: 'free',
-          routineName: 'Allenamento Libero',
-          note: '',
-          startTime: null,
-          exercises: []
-        };
+        state.activeWorkout = { routineId: 'free', routineName: 'Allenamento Libero', note: '', startTime: null, exercises: [] };
       } else {
         const rt = state.routines.find(r => r.id === routineId) || state.routines[0];
         state.activeWorkout = {
-          routineId: rt.id,
-          routineName: rt.name,
-          note: '',
-          startTime: null,
+          routineId: rt.id, routineName: rt.name, note: '', startTime: null,
           exercises: rt.exercises.map(item => {
             const prevSets = getPreviousSetsForExercise(item.exId);
             const count = item.sets || 3;
             const setsArr = [];
             for (let i = 0; i < count; i++) {
               const prev = prevSets[i] || prevSets[prevSets.length - 1] || null;
-              setsArr.push({
-                kg: prev ? prev.kg : '',
-                reps: prev ? prev.reps : '',
-                done: false
-              });
+              setsArr.push({ kg: prev ? prev.kg : '', reps: prev ? prev.reps : '', done: false });
             }
-            return {
-              instanceId: 'inst_' + Math.random().toString(36).substring(2, 9),
-              exId: item.exId,
-              sets: setsArr
-            };
+            return { instanceId: 'inst_' + Math.random().toString(36).substring(2, 9), exId: item.exId, sets: setsArr };
           })
         };
       }
-
       saveActiveWorkoutState();
-      if (render) {
-        renderRoutinePills();
-        renderActiveWorkout();
-        updateStartTimeUI();
-      }
+      if (render) { renderRoutinePills(); renderActiveWorkout(); updateStartTimeUI(); }
     }
 
     function getPreviousSetsForExercise(exId) {
@@ -896,9 +623,7 @@
         const sess = state.history[i];
         if (sess && Array.isArray(sess.exercises)) {
           const found = sess.exercises.find(e => e.exId === exId);
-          if (found && found.sets && found.sets.length > 0) {
-            return found.sets;
-          }
+          if (found && found.sets && found.sets.length > 0) return found.sets;
         }
       }
       return [];
@@ -909,42 +634,27 @@
     }
 
     function calcOneRM(kg, reps) {
-      const w = parseNum(kg);
-      const r = parseInt(reps) || 0;
+      const w = parseNum(kg), r = parseInt(reps) || 0;
       if (w <= 0 || r <= 0) return 0;
-      if (r === 1) return Math.round(w);
-      return Math.round(w * (1 + r / 30));
+      return r === 1 ? Math.round(w) : Math.round(w * (1 + r / 30));
     }
 
-    // --- RENDERING WORKOUT LOGGER ---
     function renderActiveWorkout() {
       const container = document.getElementById('workoutExercisesContainer');
       const noteInput = document.getElementById('workoutNoteInput');
       if (noteInput) noteInput.value = state.activeWorkout.note || '';
-
       container.innerHTML = '';
 
       if (state.activeWorkout.exercises.length === 0) {
-        container.innerHTML = `
-          <div class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-6 text-center space-y-2">
-            <p class="text-sm font-semibold text-slate-300">Nessun esercizio in questa scheda</p>
-            <p class="text-xs text-slate-500">Tocca "Aggiungi Esercizio" qui sotto per inserirlo.</p>
-          </div>
-        `;
-        updateLiveMetrics();
-        refreshIcons();
-        return;
+        container.innerHTML = `<div class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-6 text-center space-y-2"><p class="text-sm font-semibold text-slate-300">Nessun esercizio in questa scheda</p><p class="text-xs text-slate-500">Tocca "Aggiungi Esercizio" qui sotto per inserirlo.</p></div>`;
+        updateLiveMetrics(); refreshIcons(); return;
       }
 
       state.activeWorkout.exercises.forEach((exItem, exIndex) => {
         const meta = getExerciseMeta(exItem.exId);
         const prevSets = getPreviousSetsForExercise(exItem.exId);
-
         let best1RM = 0;
-        exItem.sets.forEach(s => {
-          const rm = calcOneRM(s.kg, s.reps);
-          if (rm > best1RM) best1RM = rm;
-        });
+        exItem.sets.forEach(s => { const rm = calcOneRM(s.kg, s.reps); if (rm > best1RM) best1RM = rm; });
 
         const card = document.createElement('div');
         card.className = 'bg-slate-900 border border-slate-800/90 rounded-2xl overflow-hidden shadow-lg';
@@ -954,104 +664,49 @@
           const prev = prevSets[setIdx] || prevSets[prevSets.length - 1] || null;
           const prevText = prev ? `${prev.kg}kg × ${prev.reps}` : '—';
           const rowBg = s.done ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-slate-950/50 border-slate-800/60';
-
           setsRowsHtml += `
             <div class="grid grid-cols-12 items-center gap-2 px-3 py-2 rounded-xl border ${rowBg} transition">
-              <div class="col-span-1 text-center">
-                <span class="text-xs font-bold ${s.done ? 'text-emerald-400' : 'text-slate-400'}">${setIdx + 1}</span>
-              </div>
-
-              <div class="col-span-4">
-                <button type="button" onclick="copyPrevToSet(${exIndex},${setIdx})" class="text-xs font-medium text-slate-400 hover:text-blue-400 truncate block w-full text-left">
-                  ${prevText}
-                </button>
-              </div>
-
-              <div class="col-span-3">
-                <input type="text" inputmode="decimal" placeholder="Kg" value="${s.kg !== undefined ? s.kg : ''}"
-                  oninput="updateSetField(${exIndex},${setIdx}, 'kg', this.value)"
-                  class="w-full bg-slate-900 border border-slate-700/80 rounded-lg py-1.5 px-2 text-center text-sm font-bold text-white focus:outline-none focus:border-blue-500" />
-              </div>
-
-              <div class="col-span-3">
-                <input type="text" inputmode="numeric" placeholder="Reps" value="${s.reps !== undefined ? s.reps : ''}"
-                  oninput="updateSetField(${exIndex},${setIdx}, 'reps', this.value)"
-                  class="w-full bg-slate-900 border border-slate-700/80 rounded-lg py-1.5 px-2 text-center text-sm font-bold text-white focus:outline-none focus:border-blue-500" />
-              </div>
-
-              <div class="col-span-1 flex justify-end">
-                <button type="button" onclick="toggleSetDone(${exIndex},${setIdx})"
-                  class="w-7 h-7 rounded-lg flex items-center justify-center transition active:scale-90 ${
-                    s.done
-                      ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
-                      : 'bg-slate-800 text-slate-400 hover:text-white'
-                  }">
-                  <i data-lucide="check" class="w-4 h-4 stroke-[2.5]"></i>
-                </button>
-              </div>
-            </div>
-          `;
+              <div class="col-span-1 text-center"><span class="text-xs font-bold ${s.done ? 'text-emerald-400' : 'text-slate-400'}">${setIdx + 1}</span></div>
+              <div class="col-span-4"><button type="button" onclick="copyPrevToSet(${exIndex}, ${setIdx})" class="text-xs font-medium text-slate-400 hover:text-blue-400 truncate block w-full text-left">${prevText}</button></div>
+              <div class="col-span-3"><input type="text" inputmode="decimal" placeholder="Kg" value="${s.kg !== undefined ? s.kg : ''}" oninput="updateSetField(${exIndex}, ${setIdx}, 'kg', this.value)" class="w-full bg-slate-900 border border-slate-700/80 rounded-lg py-1.5 px-2 text-center text-sm font-bold text-white focus:outline-none focus:border-blue-500" /></div>
+              <div class="col-span-3"><input type="text" inputmode="numeric" placeholder="Reps" value="${s.reps !== undefined ? s.reps : ''}" oninput="updateSetField(${exIndex}, ${setIdx}, 'reps', this.value)" class="w-full bg-slate-900 border border-slate-700/80 rounded-lg py-1.5 px-2 text-center text-sm font-bold text-white focus:outline-none focus:border-blue-500" /></div>
+              <div class="col-span-1 flex justify-end"><button type="button" onclick="toggleSetDone(${exIndex}, ${setIdx})" class="w-7 h-7 rounded-lg flex items-center justify-center transition active:scale-90 ${s.done ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20' : 'bg-slate-800 text-slate-400 hover:text-white'}"><i data-lucide="check" class="w-4 h-4 stroke-[2.5]"></i></button></div>
+            </div>`;
         });
 
         card.innerHTML = `
           <div class="px-4 py-3 bg-slate-900 border-b border-slate-800/80 flex items-center justify-between gap-2">
             <div>
               <div class="flex items-center gap-2">
-                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-blue-500/15 text-blue-400 border border-blue-500/20">${meta.muscle}</span>${best1RM > 0 ? `<span class="text-[10px] font-semibold text-indigo-400">1RM: ${best1RM} kg</span>` : ''}
+                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-blue-500/15 text-blue-400 border border-blue-500/20">${meta.muscle}</span>
+                ${best1RM > 0 ? `<span class="text-[10px] font-semibold text-indigo-400">1RM: ${best1RM} kg</span>` : ''}
               </div>
               <h3 class="text-sm font-bold text-white mt-1">${meta.name}</h3>
             </div>
             <div class="flex items-center gap-1">
-              <button type="button" onclick="moveWorkoutExercise(${exIndex}, -1)" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-300">
-                <i data-lucide="chevron-up" class="w-4 h-4"></i>
-              </button>
-              <button type="button" onclick="moveWorkoutExercise(${exIndex}, 1)" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-300">
-                <i data-lucide="chevron-down" class="w-4 h-4"></i>
-              </button>
-              <button type="button" onclick="removeExerciseFromWorkout(${exIndex})" class="p-1.5 rounded-lg text-slate-500 hover:text-rose-400">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
-              </button>
+              <button type="button" onclick="moveWorkoutExercise(${exIndex}, -1)" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-300"><i data-lucide="chevron-up" class="w-4 h-4"></i></button>
+              <button type="button" onclick="moveWorkoutExercise(${exIndex}, 1)" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-300"><i data-lucide="chevron-down" class="w-4 h-4"></i></button>
+              <button type="button" onclick="removeExerciseFromWorkout(${exIndex})" class="p-1.5 rounded-lg text-slate-500 hover:text-rose-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
             </div>
           </div>
-
           <div class="p-3 space-y-2">
             <div class="grid grid-cols-12 text-[10px] font-semibold uppercase tracking-wider text-slate-400 px-3">
-              <div class="col-span-1 text-center">#</div>
-              <div class="col-span-4">Precedente</div>
-              <div class="col-span-3 text-center">Kg</div>
-              <div class="col-span-3 text-center">Ripetizioni</div>
-              <div class="col-span-1 text-right">OK</div>
+              <div class="col-span-1 text-center">#</div><div class="col-span-4">Precedente</div><div class="col-span-3 text-center">Kg</div><div class="col-span-3 text-center">Ripetizioni</div><div class="col-span-1 text-right">OK</div>
             </div>
-
-            <div class="space-y-1.5">
-              ${setsRowsHtml}
-            </div>
-
+            <div class="space-y-1.5">${setsRowsHtml}</div>
             <div class="flex items-center gap-2 pt-1">
-              <button type="button" onclick="addSetToExercise(${exIndex})" class="flex-1 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-xs font-semibold text-blue-400 flex items-center justify-center gap-1 active:scale-98 transition">
-                <i data-lucide="plus" class="w-3.5 h-3.5"></i> Serie
-              </button>
-              ${exItem.sets.length > 1 ? `
-                <button type="button" onclick="removeLastSetFromExercise(${exIndex})" class="px-3 py-2 rounded-xl bg-slate-800/50 text-xs font-semibold text-slate-400 hover:text-rose-400 active:scale-95 transition">
-                  -1 Serie
-                </button>
-              ` : ''}
+              <button type="button" onclick="addSetToExercise(${exIndex})" class="flex-1 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-xs font-semibold text-blue-400 flex items-center justify-center gap-1 active:scale-98 transition"><i data-lucide="plus" class="w-3.5 h-3.5"></i> Serie</button>
+              ${exItem.sets.length > 1 ? `<button type="button" onclick="removeLastSetFromExercise(${exIndex})" class="px-3 py-2 rounded-xl bg-slate-800/50 text-xs font-semibold text-slate-400 hover:text-rose-400 active:scale-95 transition">-1 Serie</button>` : ''}
             </div>
-          </div>
-        `;
-
+          </div>`;
         container.appendChild(card);
       });
-
-      updateLiveMetrics();
-      refreshIcons();
+      updateLiveMetrics(); refreshIcons();
     }
 
-    // --- AZIONI SULLE SERIE ---
     function updateSetField(exIndex, setIdx, field, value) {
       state.activeWorkout.exercises[exIndex].sets[setIdx][field] = value;
-      saveActiveWorkoutState();
-      updateLiveMetrics();
+      saveActiveWorkoutState(); updateLiveMetrics();
     }
 
     function copyPrevToSet(exIndex, setIdx) {
@@ -1059,55 +714,35 @@
       const prevSets = getPreviousSetsForExercise(exItem.exId);
       const prev = prevSets[setIdx] || prevSets[prevSets.length - 1];
       if (!prev) return;
-      exItem.sets[setIdx].kg = prev.kg;
-      exItem.sets[setIdx].reps = prev.reps;
-      saveActiveWorkoutState();
-      renderActiveWorkout();
+      exItem.sets[setIdx].kg = prev.kg; exItem.sets[setIdx].reps = prev.reps;
+      saveActiveWorkoutState(); renderActiveWorkout();
     }
 
     function toggleSetDone(exIndex, setIdx) {
       const targetSet = state.activeWorkout.exercises[exIndex].sets[setIdx];
       targetSet.done = !targetSet.done;
-
       if (targetSet.done && !state.activeWorkout.startTime) {
         state.activeWorkout.startTime = getCurrentTimeHHMM();
         updateStartTimeUI();
       }
-
-      saveActiveWorkoutState();
-      renderRoutinePills();
-      renderActiveWorkout();
+      saveActiveWorkoutState(); renderRoutinePills(); renderActiveWorkout();
     }
 
     function addSetToExercise(exIndex) {
       const sets = state.activeWorkout.exercises[exIndex].sets;
       const lastSet = sets[sets.length - 1] || { kg: '', reps: '' };
-      sets.push({
-        kg: lastSet.kg,
-        reps: lastSet.reps,
-        done: false
-      });
-      syncActiveWorkoutStructureToRoutine();
-      saveActiveWorkoutState();
-      renderActiveWorkout();
+      sets.push({ kg: lastSet.kg, reps: lastSet.reps, done: false });
+      syncActiveWorkoutStructureToRoutine(); saveActiveWorkoutState(); renderActiveWorkout();
     }
 
     function removeLastSetFromExercise(exIndex) {
       const sets = state.activeWorkout.exercises[exIndex].sets;
-      if (sets.length > 1) {
-        sets.pop();
-        syncActiveWorkoutStructureToRoutine();
-        saveActiveWorkoutState();
-        renderActiveWorkout();
-      }
+      if (sets.length > 1) { sets.pop(); syncActiveWorkoutStructureToRoutine(); saveActiveWorkoutState(); renderActiveWorkout(); }
     }
 
     function removeExerciseFromWorkout(exIndex) {
       state.activeWorkout.exercises.splice(exIndex, 1);
-      syncActiveWorkoutStructureToRoutine();
-      saveActiveWorkoutState();
-      renderActiveWorkout();
-      showToast('Esercizio rimosso');
+      syncActiveWorkoutStructureToRoutine(); saveActiveWorkoutState(); renderActiveWorkout(); showToast('Esercizio rimosso');
     }
 
     function moveWorkoutExercise(exIndex, direction) {
@@ -1116,9 +751,7 @@
       const temp = state.activeWorkout.exercises[exIndex];
       state.activeWorkout.exercises[exIndex] = state.activeWorkout.exercises[targetIndex];
       state.activeWorkout.exercises[targetIndex] = temp;
-      syncActiveWorkoutStructureToRoutine();
-      saveActiveWorkoutState();
-      renderActiveWorkout();
+      syncActiveWorkoutStructureToRoutine(); saveActiveWorkoutState(); renderActiveWorkout();
     }
 
     function askResetCurrentSessionValues() {
@@ -1131,34 +764,23 @@
           loadRoutineIntoActiveWorkout(state.activeWorkout.routineId, true, true);
           showToast('Sessione azzerata');
         },
-        'Azzera',
-        true
+        'Azzera', true
       );
     }
 
     function updateLiveMetrics() {
-      let vol = 0;
-      let doneSets = 0;
-      let totalSets = 0;
-
+      let vol = 0, doneSets = 0, totalSets = 0;
       state.activeWorkout.exercises.forEach(ex => {
         ex.sets.forEach(s => {
           totalSets++;
-          if (s.done) {
-            doneSets++;
-            const w = parseNum(s.kg);
-            const r = parseInt(s.reps) || 0;
-            vol += w * r;
-          }
+          if (s.done) { doneSets++; vol += parseNum(s.kg) * (parseInt(s.reps) || 0); }
         });
       });
-
       document.getElementById('liveVolume').textContent = Math.round(vol).toLocaleString('it-IT');
       document.getElementById('liveSets').textContent = doneSets;
       document.getElementById('liveTotalSets').textContent = `/${totalSets}`;
     }
 
-    // --- SELETTORE ESERCIZI ---
     function openExercisePicker(context) {
       pickerContext = context;
       const subtitle = document.getElementById('pickerTargetSubtitle');
@@ -1168,7 +790,6 @@
       } else {
         subtitle.textContent = `Aggiungi a: ${state.activeWorkout.routineName}`;
       }
-
       document.getElementById('exerciseSearchInput').value = '';
       document.getElementById('customExerciseNameInput').value = '';
       renderExercisePickerList();
@@ -1176,37 +797,22 @@
       refreshIcons();
     }
 
-    function closeExercisePicker() {
-      document.getElementById('exercisePickerModal').classList.add('hidden');
-    }
+    function closeExercisePicker() { document.getElementById('exercisePickerModal').classList.add('hidden'); }
 
     function renderExercisePickerList() {
       const query = (document.getElementById('exerciseSearchInput').value || '').toLowerCase().trim();
       const listEl = document.getElementById('exercisePickerList');
       listEl.innerHTML = '';
-
-      const filtered = state.exercises.filter(ex =>
-        ex.name.toLowerCase().includes(query) || ex.muscle.toLowerCase().includes(query)
-      );
-
-      if (filtered.length === 0) {
-        listEl.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">Nessun esercizio trovato. Scrivi il nome nel campo qui sopra e tocca "+ Crea"!</p>`;
+      const filtered = state.exercises.filter(ex => ex.name.toLowerCase().includes(query) || ex.muscle.toLowerCase().includes(query));
+      if (!filtered.length) {
+        listEl.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">Nessun esercizio trovato. Scrivi il nome sopra e tocca "+ Crea"!</p>`;
         return;
       }
-
       filtered.forEach(ex => {
         const item = document.createElement('button');
         item.type = 'button';
         item.className = 'w-full p-3 rounded-xl bg-slate-950/80 hover:bg-slate-800 border border-slate-800/90 flex items-center justify-between text-left transition active:scale-[0.99]';
-        item.innerHTML = `
-          <div>
-            <div class="text-sm font-bold text-white">${ex.name}</div>
-            <div class="text-[11px] text-blue-400 font-medium">${ex.muscle}</div>
-          </div>
-          <div class="w-8 h-8 rounded-lg bg-blue-600/20 text-blue-400 flex items-center justify-center">
-            <i data-lucide="plus" class="w-4 h-4"></i>
-          </div>
-        `;
+        item.innerHTML = `<div><div class="text-sm font-bold text-white">${ex.name}</div><div class="text-[11px] text-blue-400 font-medium">${ex.muscle}</div></div><div class="w-8 h-8 rounded-lg bg-blue-600/20 text-blue-400 flex items-center justify-center"><i data-lucide="plus" class="w-4 h-4"></i></div>`;
         item.onclick = () => selectExerciseFromPicker(ex.id);
         listEl.appendChild(item);
       });
@@ -1215,123 +821,71 @@
 
     function selectExerciseFromPicker(exId) {
       const meta = getExerciseMeta(exId);
-
       if (pickerContext === 'routineEditor') {
         const rt = state.routines.find(r => r.id === currentEditingRoutineId);
         if (rt) {
           rt.exercises.push({ exId: exId, sets: 3 });
-          // Aggiorna eventuale bozza di quella scheda senza perdere le serie già scritte
           syncRoutineChangesIntoDraft(rt);
           saveAllData();
           loadRoutineIntoEditor(rt.id);
-          if (state.activeWorkout.routineId === rt.id) {
-            loadRoutineIntoActiveWorkout(rt.id, true, false);
-          } else {
-            renderRoutinePills();
-          }
+          if (state.activeWorkout.routineId === rt.id) loadRoutineIntoActiveWorkout(rt.id, true, false);
+          else renderRoutinePills();
           showToast(`"${meta.name}" aggiunto!`);
         }
       } else {
         const prevSets = getPreviousSetsForExercise(exId);
         const defaultSets = [0, 1, 2].map(idx => {
           const prev = prevSets[idx] || prevSets[prevSets.length - 1] || null;
-          return {
-            kg: prev ? prev.kg : '',
-            reps: prev ? prev.reps : '',
-            done: false
-          };
+          return { kg: prev ? prev.kg : '', reps: prev ? prev.reps : '', done: false };
         });
-
-        state.activeWorkout.exercises.push({
-          instanceId: 'inst_' + Math.random().toString(36).substring(2, 9),
-          exId: exId,
-          sets: defaultSets
-        });
-        syncActiveWorkoutStructureToRoutine();
-        saveActiveWorkoutState();
-        renderActiveWorkout();
+        state.activeWorkout.exercises.push({ instanceId: 'inst_' + Math.random().toString(36).substring(2, 9), exId: exId, sets: defaultSets });
+        syncActiveWorkoutStructureToRoutine(); saveActiveWorkoutState(); renderActiveWorkout();
         showToast(`"${meta.name}" aggiunto!`);
       }
-
       closeExercisePicker();
     }
 
     function createAndSelectCustomExercise() {
-      const nameInput = document.getElementById('customExerciseNameInput');
-      const muscleSelect = document.getElementById('customExerciseMuscleSelect');
-      const name = nameInput.value.trim();
-      if (!name) {
-        showToast('Scrivi prima il nome del nuovo esercizio', true);
-        return;
-      }
-
-      const newEx = {
-        id: 'ex_custom_' + Date.now(),
-        name: name,
-        muscle: muscleSelect.value
-      };
-
-      state.exercises.unshift(newEx);
-      saveAllData();
-      selectExerciseFromPicker(newEx.id);
+      const name = document.getElementById('customExerciseNameInput').value.trim();
+      const muscle = document.getElementById('customExerciseMuscleSelect').value;
+      if (!name) { showToast('Scrivi prima il nome del nuovo esercizio', true); return; }
+      const newEx = { id: 'ex_custom_' + Date.now(), name: name, muscle: muscle };
+      state.exercises.unshift(newEx); saveAllData(); selectExerciseFromPicker(newEx.id);
     }
 
-    // Mantiene sincronizzata la bozza quando si modifica una scheda dall'Editor Schede
     function syncRoutineChangesIntoDraft(rt) {
       const existingDraft = state.routineDrafts[rt.id];
       if (!existingDraft) return;
-
       const updatedExercises = rt.exercises.map(item => {
         const foundInDraft = (existingDraft.exercises || []).find(e => e.exId === item.exId);
         if (foundInDraft) {
-          // Adegua il numero di serie preservando quelle già compilate
           const currentSets = [...foundInDraft.sets];
           while (currentSets.length < item.sets) {
             const last = currentSets[currentSets.length - 1] || { kg: '', reps: '' };
             currentSets.push({ kg: last.kg, reps: last.reps, done: false });
           }
-          while (currentSets.length > item.sets && currentSets.length > 1) {
-            currentSets.pop();
-          }
+          while (currentSets.length > item.sets && currentSets.length > 1) currentSets.pop();
           return { ...foundInDraft, sets: currentSets };
         } else {
           const prevSets = getPreviousSetsForExercise(item.exId);
           const setsArr = [];
           for (let i = 0; i < (item.sets || 3); i++) {
             const prev = prevSets[i] || prevSets[prevSets.length - 1] || null;
-            setsArr.push({
-              kg: prev ? prev.kg : '',
-              reps: prev ? prev.reps : '',
-              done: false
-            });
+            setsArr.push({ kg: prev ? prev.kg : '', reps: prev ? prev.reps : '', done: false });
           }
-          return {
-            instanceId: 'inst_' + Math.random().toString(36).substring(2, 9),
-            exId: item.exId,
-            sets: setsArr
-          };
+          return { instanceId: 'inst_' + Math.random().toString(36).substring(2, 9), exId: item.exId, sets: setsArr };
         }
       });
-
       existingDraft.routineName = rt.name;
       existingDraft.exercises = updatedExercises;
       state.routineDrafts[rt.id] = existingDraft;
-      if (state.activeWorkout.routineId === rt.id) {
-        state.activeWorkout = JSON.parse(JSON.stringify(existingDraft));
-      }
+      if (state.activeWorkout.routineId === rt.id) state.activeWorkout = JSON.parse(JSON.stringify(existingDraft));
       localStorage.setItem('ironos_routine_drafts_v2', JSON.stringify(state.routineDrafts));
     }
 
-    // --- GESTIONE & EDITOR DELLE SCHEDE ---
     function openRoutineManagerModal() {
-      if (state.routines.length === 0) {
-        state.routines = JSON.parse(JSON.stringify(DEFAULT_ROUTINES));
-      }
-      currentEditingRoutineId =
-        state.activeWorkout.routineId !== 'free'
-          ? state.activeWorkout.routineId
-          : state.routines[0].id;
-
+      if (!state.routines.length) state.routines = JSON.parse(JSON.stringify(DEFAULT_ROUTINES));
+      currentEditingRoutineId = state.activeWorkout.routineId !== 'free' ? state.activeWorkout.routineId : state.routines[0].id;
       populateEditorRoutineSelect();
       loadRoutineIntoEditor(currentEditingRoutineId);
       document.getElementById('routineManagerModal').classList.remove('hidden');
@@ -1340,8 +894,7 @@
 
     function closeRoutineManagerModal() {
       document.getElementById('routineManagerModal').classList.add('hidden');
-      renderRoutinePills();
-      renderActiveWorkout();
+      renderRoutinePills(); renderActiveWorkout();
     }
 
     function populateEditorRoutineSelect() {
@@ -1349,8 +902,7 @@
       sel.innerHTML = '';
       state.routines.forEach(rt => {
         const opt = document.createElement('option');
-        opt.value = rt.id;
-        opt.textContent = rt.name;
+        opt.value = rt.id; opt.textContent = rt.name;
         if (rt.id === currentEditingRoutineId) opt.selected = true;
         sel.appendChild(opt);
       });
@@ -1360,48 +912,28 @@
       currentEditingRoutineId = routineId;
       const rt = state.routines.find(r => r.id === routineId);
       if (!rt) return;
-
       document.getElementById('editorRoutineSelect').value = rt.id;
       document.getElementById('editorRoutineNameInput').value = rt.name;
       document.getElementById('editorExerciseCount').textContent = `${rt.exercises.length} esercizi`;
-
       const list = document.getElementById('editorExercisesList');
       list.innerHTML = '';
-
-      if (rt.exercises.length === 0) {
-        list.innerHTML = `
-          <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 text-center text-xs text-slate-500">
-            Questa scheda è vuota. Tocca "+ Aggiungi Esercizio a questa Scheda" qui sotto.
-          </div>
-        `;
+      if (!rt.exercises.length) {
+        list.innerHTML = `<div class="p-4 rounded-xl bg-slate-950 border border-slate-800 text-center text-xs text-slate-500">Questa scheda è vuota. Tocca "+ Aggiungi Esercizio a questa Scheda" qui sotto.</div>`;
         return;
       }
-
       rt.exercises.forEach((item, idx) => {
         const meta = getExerciseMeta(item.exId);
         const row = document.createElement('div');
         row.className = 'p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-2';
         row.innerHTML = `
-          <div class="min-w-0 flex-1">
-            <div class="text-xs font-bold text-white truncate">${idx + 1}.${meta.name}</div>
-            <div class="text-[10px] text-blue-400">${meta.muscle}</div>
-          </div>
+          <div class="min-w-0 flex-1"><div class="text-xs font-bold text-white truncate">${idx + 1}. ${meta.name}</div><div class="text-[10px] text-blue-400">${meta.muscle}</div></div>
           <div class="flex items-center gap-1.5 shrink-0">
             <label class="text-[10px] text-slate-400">Serie:</label>
-            <input type="number" min="1" max="15" value="${item.sets || 3}"
-              onchange="updateRoutineExerciseSets(${idx}, this.value)"
-              class="w-12 bg-slate-900 border border-slate-700 rounded-lg py-1 text-center text-xs font-bold text-white" />
-            <button type="button" onclick="moveRoutineExercise(${idx}, -1)" class="p-1.5 text-slate-400 hover:text-white">
-              <i data-lucide="chevron-up" class="w-4 h-4"></i>
-            </button>
-            <button type="button" onclick="moveRoutineExercise(${idx}, 1)" class="p-1.5 text-slate-400 hover:text-white">
-              <i data-lucide="chevron-down" class="w-4 h-4"></i>
-            </button>
-            <button type="button" onclick="removeRoutineExercise(${idx})" class="p-1.5 text-rose-400 hover:text-rose-300">
-              <i data-lucide="trash-2" class="w-4 h-4"></i>
-            </button>
-          </div>
-        `;
+            <input type="number" min="1" max="15" value="${item.sets || 3}" onchange="updateRoutineExerciseSets(${idx}, this.value)" class="w-12 bg-slate-900 border border-slate-700 rounded-lg py-1 text-center text-xs font-bold text-white" />
+            <button type="button" onclick="moveRoutineExercise(${idx}, -1)" class="p-1.5 text-slate-400 hover:text-white"><i data-lucide="chevron-up" class="w-4 h-4"></i></button>
+            <button type="button" onclick="moveRoutineExercise(${idx}, 1)" class="p-1.5 text-slate-400 hover:text-white"><i data-lucide="chevron-down" class="w-4 h-4"></i></button>
+            <button type="button" onclick="removeRoutineExercise(${idx})" class="p-1.5 text-rose-400 hover:text-rose-300"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+          </div>`;
         list.appendChild(row);
       });
       refreshIcons();
@@ -1411,18 +943,14 @@
       const rt = state.routines.find(r => r.id === currentEditingRoutineId);
       if (!rt) return;
       rt.name = newName.trim() || 'Scheda';
-      syncRoutineChangesIntoDraft(rt);
-      saveAllData();
-      populateEditorRoutineSelect();
-      renderRoutinePills();
+      syncRoutineChangesIntoDraft(rt); saveAllData(); populateEditorRoutineSelect(); renderRoutinePills();
     }
 
     function updateRoutineExerciseSets(exIdx, newSets) {
       const rt = state.routines.find(r => r.id === currentEditingRoutineId);
       if (!rt) return;
       rt.exercises[exIdx].sets = Math.max(1, parseInt(newSets) || 3);
-      syncRoutineChangesIntoDraft(rt);
-      saveAllData();
+      syncRoutineChangesIntoDraft(rt); saveAllData();
     }
 
     function moveRoutineExercise(exIdx, dir) {
@@ -1430,60 +958,35 @@
       if (!rt) return;
       const target = exIdx + dir;
       if (target < 0 || target >= rt.exercises.length) return;
-      const tmp = rt.exercises[exIdx];
-      rt.exercises[exIdx] = rt.exercises[target];
-      rt.exercises[target] = tmp;
-      syncRoutineChangesIntoDraft(rt);
-      saveAllData();
-      loadRoutineIntoEditor(rt.id);
+      const tmp = rt.exercises[exIdx]; rt.exercises[exIdx] = rt.exercises[target]; rt.exercises[target] = tmp;
+      syncRoutineChangesIntoDraft(rt); saveAllData(); loadRoutineIntoEditor(rt.id);
     }
 
     function removeRoutineExercise(exIdx) {
       const rt = state.routines.find(r => r.id === currentEditingRoutineId);
       if (!rt) return;
       rt.exercises.splice(exIdx, 1);
-      syncRoutineChangesIntoDraft(rt);
-      saveAllData();
-      loadRoutineIntoEditor(rt.id);
+      syncRoutineChangesIntoDraft(rt); saveAllData(); loadRoutineIntoEditor(rt.id);
     }
 
     function createNewRoutineInEditor() {
-      const newRt = {
-        id: 'rt_' + Date.now(),
-        name: 'Scheda ' + (state.routines.length + 1),
-        exercises: []
-      };
-      state.routines.push(newRt);
-      saveAllData();
-      currentEditingRoutineId = newRt.id;
-      populateEditorRoutineSelect();
-      loadRoutineIntoEditor(newRt.id);
-      renderRoutinePills();
+      const newRt = { id: 'rt_' + Date.now(), name: 'Scheda ' + (state.routines.length + 1), exercises: [] };
+      state.routines.push(newRt); saveAllData(); currentEditingRoutineId = newRt.id;
+      populateEditorRoutineSelect(); loadRoutineIntoEditor(newRt.id); renderRoutinePills();
       showToast('Nuova scheda creata!');
     }
 
     function deleteRoutineFromEditor() {
-      if (state.routines.length <= 1) {
-        showToast('Deve rimanere almeno una scheda', true);
-        return;
-      }
+      if (state.routines.length <= 1) { showToast('Deve rimanere almeno una scheda', true); return; }
       const rt = state.routines.find(r => r.id === currentEditingRoutineId);
-      openCustomConfirm(
-        'Elimina Scheda',
-        `Vuoi eliminare definitivamente la scheda "${rt.name}"?`,
-        () => {
-          delete state.routineDrafts[currentEditingRoutineId];
-          state.routines = state.routines.filter(r => r.id !== currentEditingRoutineId);
-          currentEditingRoutineId = state.routines[0].id;
-          saveAllData();
-          populateEditorRoutineSelect();
-          loadRoutineIntoEditor(currentEditingRoutineId);
-          loadRoutineIntoActiveWorkout(currentEditingRoutineId, true, false);
-          showToast('Scheda eliminata');
-        },
-        'Elimina',
-        true
-      );
+      openCustomConfirm('Elimina Scheda', `Vuoi eliminare definitivamente la scheda "${rt.name}"?`, () => {
+        delete state.routineDrafts[currentEditingRoutineId];
+        state.routines = state.routines.filter(r => r.id !== currentEditingRoutineId);
+        currentEditingRoutineId = state.routines[0].id;
+        saveAllData(); populateEditorRoutineSelect(); loadRoutineIntoEditor(currentEditingRoutineId);
+        loadRoutineIntoActiveWorkout(currentEditingRoutineId, true, false);
+        showToast('Scheda eliminata');
+      }, 'Elimina', true);
     }
 
     function applyEditedRoutineToLiveWorkout() {
@@ -1494,11 +997,9 @@
       showToast('Scheda pronta!');
     }
 
-    // --- SALVATAGGIO ALLENAMENTO NELLO STORICO ---
     function finishWorkout() {
       const cleanedExercises = [];
-      let totalVol = 0;
-      let totalSetsCount = 0;
+      let totalVol = 0, totalSetsCount = 0;
 
       state.activeWorkout.exercises.forEach(ex => {
         const doneSets = ex.sets.filter(s => s.done);
@@ -1506,27 +1007,23 @@
           cleanedExercises.push({
             exId: ex.exId,
             sets: doneSets.map(s => {
-              const w = parseNum(s.kg);
-              const r = parseInt(s.reps) || 0;
-              totalVol += w * r;
-              totalSetsCount++;
+              const w = parseNum(s.kg), r = parseInt(s.reps) || 0;
+              totalVol += w * r; totalSetsCount++;
               return { kg: w, reps: r };
             })
           });
         }
       });
 
-      if (cleanedExercises.length === 0) {
+      if (!cleanedExercises.length) {
         state.activeWorkout.exercises.forEach(ex => {
           const filledSets = ex.sets.filter(s => parseNum(s.kg) > 0 || (parseInt(s.reps) || 0) > 0);
           if (filledSets.length > 0) {
             cleanedExercises.push({
               exId: ex.exId,
               sets: filledSets.map(s => {
-                const w = parseNum(s.kg);
-                const r = parseInt(s.reps) || 0;
-                totalVol += w * r;
-                totalSetsCount++;
+                const w = parseNum(s.kg), r = parseInt(s.reps) || 0;
+                totalVol += w * r; totalSetsCount++;
                 return { kg: w, reps: r };
               })
             });
@@ -1534,7 +1031,7 @@
         });
       }
 
-      if (cleanedExercises.length === 0) {
+      if (!cleanedExercises.length) {
         showToast('Spunta (OK) o compila almeno una serie prima di salvare!', true);
         return;
       }
@@ -1542,141 +1039,74 @@
       const endTimeStr = getCurrentTimeHHMM();
       const startTimeStr = state.activeWorkout.startTime || endTimeStr;
 
-      const sessionRecord = {
+      state.history.push({
         id: 'sess_' + Date.now(),
         date: new Date().toISOString(),
         routineName: state.activeWorkout.routineName,
         note: state.activeWorkout.note || '',
-        startTime: startTimeStr,
-        endTime: endTimeStr,
-        totalVolume: Math.round(totalVol),
-        totalSets: totalSetsCount,
+        startTime: startTimeStr, endTime: endTimeStr,
+        totalVolume: Math.round(totalVol), totalSets: totalSetsCount,
         exercises: cleanedExercises
-      };
+      });
 
-      state.history.push(sessionRecord);
-      // Pulisce la bozza della scheda appena salvata così si ricarica fresca coi nuovi "Precedenti"
       delete state.routineDrafts[state.activeWorkout.routineId];
       localStorage.setItem('ironos_routine_drafts_v2', JSON.stringify(state.routineDrafts));
       saveAllData();
 
       loadRoutineIntoActiveWorkout(state.activeWorkout.routineId, true, true);
-      showToast(`Salvato! (${startTimeStr} →${endTimeStr})`);
+      showToast(`Salvato! (${startTimeStr} → ${endTimeStr})`);
       switchTab('history');
     }
 
-    // --- RENDERING STORICO ---
     function renderHistory() {
       const container = document.getElementById('historyListContainer');
-      const badge = document.getElementById('historyCountBadge');
-      badge.textContent = `${state.history.length} sessioni`;
+      document.getElementById('historyCountBadge').textContent = `${state.history.length} sessioni`;
       container.innerHTML = '';
-
-      if (state.history.length === 0) {
-        container.innerHTML = `
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center space-y-2">
-            <p class="text-sm font-semibold text-slate-300">Nessun allenamento nello storico</p>
-            <p class="text-xs text-slate-500">Completa le tue serie e premi "Salva" in alto a destra.</p>
-          </div>
-        `;
+      if (!state.history.length) {
+        container.innerHTML = `<div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center space-y-2"><p class="text-sm font-semibold text-slate-300">Nessun allenamento nello storico</p><p class="text-xs text-slate-500">Completa le tue serie e premi "Salva" in alto a destra.</p></div>`;
         return;
       }
-
-      const reversed = [...state.history].reverse();
-      reversed.forEach(sess => {
+      [...state.history].reverse().forEach(sess => {
         const dt = new Date(sess.date);
         const dateStr = dt.toLocaleDateString('it-IT', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
-
-        let timeLabel = '—';
-        if (sess.startTime && sess.endTime) {
-          timeLabel = `${sess.startTime} →${sess.endTime}`;
-        } else if (sess.durationSeconds) {
-          timeLabel = `${Math.max(1, Math.round(sess.durationSeconds / 60))} min`;
-        } else {
-          timeLabel = dt.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
-        }
+        let timeLabel = sess.startTime && sess.endTime ? `${sess.startTime} → ${sess.endTime}` : dt.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
 
         let exSummaryHtml = '';
         (sess.exercises || []).forEach(ex => {
           const meta = getExerciseMeta(ex.exId);
-          const setsPills = (ex.sets || [])
-            .map(s => `<span class="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-[11px] font-mono text-slate-200">${s.kg}kg × ${s.reps}</span>`)
-            .join(' ');
-          exSummaryHtml += `
-            <div class="py-1.5 border-b border-slate-800/50 last:border-0">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-slate-200">${meta.name}</span>
-                <span class="text-[10px] text-slate-500">${(ex.sets || []).length} serie</span>
-              </div>
-              <div class="flex flex-wrap gap-1 mt-1">${setsPills}</div>
-            </div>
-          `;
+          const setsPills = (ex.sets || []).map(s => `<span class="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-[11px] font-mono text-slate-200">${s.kg}kg × ${s.reps}</span>`).join(' ');
+          exSummaryHtml += `<div class="py-1.5 border-b border-slate-800/50 last:border-0"><div class="flex items-center justify-between"><span class="text-xs font-bold text-slate-200">${meta.name}</span><span class="text-[10px] text-slate-500">${(ex.sets || []).length} serie</span></div><div class="flex flex-wrap gap-1 mt-1">${setsPills}</div></div>`;
         });
 
         const card = document.createElement('div');
         card.className = 'bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3';
         card.innerHTML = `
           <div class="flex items-start justify-between">
-            <div>
-              <span class="text-[11px] font-semibold text-blue-400 uppercase">${dateStr}</span>
-              <h3 class="text-base font-bold text-white">${sess.routineName \vert{}\vert{} 'Allenamento'}</h3>${sess.note ? `<p class="text-xs text-slate-400 italic mt-0.5">"${sess.note}"</p>` : ''}
-            </div>
-            <button type="button" onclick="deleteHistorySession('${sess.id}')" class="p-1.5 text-slate-500 hover:text-rose-400">
-              <i data-lucide="trash-2" class="w-4 h-4"></i>
-            </button>
+            <div><span class="text-[11px] font-semibold text-blue-400 uppercase">${dateStr}</span><h3 class="text-base font-bold text-white">${sess.routineName || 'Allenamento'}</h3>${sess.note ? `<p class="text-xs text-slate-400 italic mt-0.5">"${sess.note}"</p>` : ''}</div>
+            <button type="button" onclick="deleteHistorySession('${sess.id}')" class="p-1.5 text-slate-500 hover:text-rose-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
           </div>
-
           <div class="grid grid-cols-3 gap-2 bg-slate-950/70 rounded-xl p-2.5 border border-slate-800/80 text-center">
-            <div>
-              <div class="text-[10px] text-slate-400">Orario</div>
-              <div class="text-xs font-bold text-blue-300 font-mono">${timeLabel}</div>
-            </div>
-            <div>
-              <div class="text-[10px] text-slate-400">Serie Totali</div>
-              <div class="text-xs font-bold text-emerald-400">${sess.totalSets || 0}</div>
-            </div>
-            <div>
-              <div class="text-[10px] text-slate-400">Volume</div>
-              <div class="text-xs font-bold text-white">${sess.totalVolume || 0} kg</div>
-            </div>
+            <div><div class="text-[10px] text-slate-400">Orario</div><div class="text-xs font-bold text-blue-300 font-mono">${timeLabel}</div></div>
+            <div><div class="text-[10px] text-slate-400">Serie Totali</div><div class="text-xs font-bold text-emerald-400">${sess.totalSets || 0}</div></div>
+            <div><div class="text-[10px] text-slate-400">Volume</div><div class="text-xs font-bold text-white">${sess.totalVolume || 0} kg</div></div>
           </div>
-
-          <div class="space-y-1">
-            ${exSummaryHtml}
-          </div>
-        `;
+          <div class="space-y-1">${exSummaryHtml}</div>`;
         container.appendChild(card);
       });
       refreshIcons();
     }
 
     function deleteHistorySession(sessId) {
-      openCustomConfirm(
-        'Elimina Sessione',
-        'Vuoi eliminare questo allenamento dallo storico?',
-        () => {
-          state.history = state.history.filter(s => s.id !== sessId);
-          saveAllData();
-          renderHistory();
-          showToast('Sessione eliminata');
-        },
-        'Elimina',
-        true
-      );
+      openCustomConfirm('Elimina Sessione', 'Vuoi eliminare questo allenamento dallo storico?', () => {
+        state.history = state.history.filter(s => s.id !== sessId);
+        saveAllData(); renderHistory(); showToast('Sessione eliminata');
+      }, 'Elimina', true);
     }
 
-    // --- ANALYTICS: NUOVO GRAFICO TRADINGVIEW-STYLE CON ETICHETTE SUI PUNTI ---
     function setChartMetricMode(mode) {
       chartMetricMode = mode;
-      const kgBtn = document.getElementById('chartModeKgBtn');
-      const rmBtn = document.getElementById('chartModeRmBtn');
-      if (mode === 'kg') {
-        kgBtn.className = 'px-2.5 py-1 rounded-md bg-blue-600 text-white transition';
-        rmBtn.className = 'px-2.5 py-1 rounded-md text-slate-400 transition';
-      } else {
-        rmBtn.className = 'px-2.5 py-1 rounded-md bg-indigo-600 text-white transition';
-        kgBtn.className = 'px-2.5 py-1 rounded-md text-slate-400 transition';
-      }
+      document.getElementById('chartModeKgBtn').className = mode === 'kg' ? 'px-2.5 py-1 rounded-md bg-blue-600 text-white transition' : 'px-2.5 py-1 rounded-md text-slate-400 transition';
+      document.getElementById('chartModeRmBtn').className = mode === '1rm' ? 'px-2.5 py-1 rounded-md bg-indigo-600 text-white transition' : 'px-2.5 py-1 rounded-md text-slate-400 transition';
       renderAnalyticsCharts();
     }
 
@@ -1684,105 +1114,59 @@
       const sel = document.getElementById('analyticsExerciseSelect');
       const currentVal = sel.value;
       sel.innerHTML = '';
-
       const exercisesWithHistory = new Set();
-      state.history.forEach(sess => {
-        (sess.exercises || []).forEach(e => exercisesWithHistory.add(e.exId));
-      });
-
-      const sortedExercises = [...state.exercises].sort((a, b) => {
-        const aHas = exercisesWithHistory.has(a.id) ? 0 : 1;
-        const bHas = exercisesWithHistory.has(b.id) ? 0 : 1;
-        return aHas - bHas;
-      });
-
+      state.history.forEach(sess => (sess.exercises || []).forEach(e => exercisesWithHistory.add(e.exId)));
+      const sortedExercises = [...state.exercises].sort((a, b) => (exercisesWithHistory.has(a.id) ? 0 : 1) - (exercisesWithHistory.has(b.id) ? 0 : 1));
       sortedExercises.forEach(ex => {
         const opt = document.createElement('option');
         opt.value = ex.id;
-        const mark = exercisesWithHistory.has(ex.id) ? '● ' : '';
-        opt.textContent = `${mark}${ex.name} (${ex.muscle})`;
+        opt.textContent = `${exercisesWithHistory.has(ex.id) ? '● ' : ''}${ex.name} (${ex.muscle})`;
         sel.appendChild(opt);
       });
-
-      if (currentVal && exercisesWithHistory.has(currentVal)) {
-        sel.value = currentVal;
-      } else if (sortedExercises.length > 0) {
-        sel.value = sortedExercises[0].id;
-      }
+      if (currentVal && exercisesWithHistory.has(currentVal)) sel.value = currentVal;
+      else if (sortedExercises.length > 0) sel.value = sortedExercises[0].id;
     }
 
-    // Classifica ogni sessione rispetto alla precedente per colore e spiegazione
     function classifyProgressionPoint(curr, prev) {
-      if (!prev) {
-        return {
-          status: 'first',
-          color: '#3b82f6', // Blu
-          label: '1ª Sessione',
-          verdict: 'Prima sessione di riferimento registrata per questo esercizio.'
-        };
-      }
-
+      if (!prev) return { status: 'first', color: '#3b82f6', label: '1ª Sessione', verdict: 'Prima sessione di riferimento registrata per questo esercizio.' };
       const dKg = +(curr.maxKg - prev.maxKg).toFixed(1);
       const dReps = curr.repsAtMaxKg - prev.repsAtMaxKg;
       const dSets = curr.setsCount - prev.setsCount;
 
-      // Caso 1: Aumento di carico MA calo di ripetizioni o di serie (Trade-off!)
       if (dKg > 0 && (dReps < 0 || dSets < 0)) {
         const parts = [];
         if (dReps < 0) parts.push(`${Math.abs(dReps)} reps in meno sul carico max`);
         if (dSets < 0) parts.push(`${Math.abs(dSets)} serie in meno`);
-        return {
-          status: 'tradeoff',
-          color: '#f59e0b', // Giallo Ambra
-          label: '+Kg / -Reps',
-          verdict: `⚖️ Carico aumentato (+${dKg} kg), ma con${parts.join(' e ')}.`
-        };
+        return { status: 'tradeoff', color: '#f59e0b', label: '+Kg / -Reps', verdict: `⚖️ Carico aumentato (+${dKg} kg), ma con ${parts.join(' e ')}.` };
       }
-
-      // Caso 2: Progressione netta (Più Kg a parità/più reps, oppure stesso Kg con più reps o più serie)
-      if (
-        (dKg > 0 && dReps >= 0 && dSets >= 0) ||
-        (dKg === 0 && (dReps > 0 || (dReps === 0 && dSets > 0)))
-      ) {
+      if ((dKg > 0 && dReps >= 0 && dSets >= 0) || (dKg === 0 && (dReps > 0 || (dReps === 0 && dSets > 0)))) {
         const gains = [];
         if (dKg > 0) gains.push(`+${dKg} kg`);
         if (dReps > 0) gains.push(`+${dReps} ripetizioni`);
         if (dSets > 0) gains.push(`+${dSets} serie`);
-        return {
-          status: 'progress',
-          color: '#10b981', // Verde Smeraldo
-          label: 'Progressione ↑',
-          verdict: `🚀 Sovraccarico progressivo riuscito: ${gains.join(', ')}!`
-        };
+        return { status: 'progress', color: '#10b981', label: 'Progressione ↑', verdict: `🚀 Sovraccarico progressivo riuscito: ${gains.join(', ')}!` };
       }
-
-      // Caso 3: Stallo / Mantenimento esatto
       if (dKg === 0 && dReps === 0 && dSets === 0) {
-        return {
-          status: 'same',
-          color: '#3b82f6', // Blu
-          label: 'Stabile =',
-          verdict: '🟰 Performance identica alla sessione precedente (carico, serie e reps invariati).'
-        };
+        return { status: 'same', color: '#3b82f6', label: 'Stabile =', verdict: '🟰 Performance identica alla sessione precedente (carico, serie e reps invariati).' };
       }
-
-      // Caso 4: Calo di carico ma aumento di ripetizioni/serie (Volume / Back-off)
       if (dKg < 0 && (dReps > 0 || dSets > 0)) {
-        return {
-          status: 'volume_shift',
-          color: '#f59e0b', // Ambra
-          label: '-Kg / +Reps',
-          verdict: `🔄 Carico ridotto (${dKg} kg) ma compensato con più ripetizioni/serie.`
-        };
+        return { status: 'volume_shift', color: '#f59e0b', label: '-Kg / +Reps', verdict: `🔄 Carico ridotto (${dKg} kg) ma compensato con più ripetizioni/serie.` };
       }
+      return { status: 'drop', color: '#f43f5e', label: 'Calo ↓', verdict: `📉 Leggero calo rispetto alla sessione precedente (${dKg} kg, ${dReps >= 0 ? '+' + dReps : dReps} reps).` };
+    }
 
-      // Caso 5: Calo netto
-      return {
-        status: 'drop',
-        color: '#f43f5e', // Rosso
-        label: 'Calo ↓',
-        verdict: `📉 Leggero calo rispetto alla sessione precedente (${dKg} kg,${dReps >= 0 ? '+' + dReps : dReps} reps).`
-      };
+    function drawBoxCompatible(ctx, x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
     }
 
     function renderAnalyticsCharts() {
@@ -1795,46 +1179,24 @@
         const found = (sess.exercises || []).find(e => e.exId === exId);
         if (found && found.sets && found.sets.length > 0) {
           const d = new Date(sess.date);
-          const dateShort = d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' });
-
-          let maxKg = 0;
-          let repsAtMaxKg = 0;
-          let best1RM = 0;
-          let totalReps = 0;
-          const setsCount = found.sets.length;
-
+          let maxKg = 0, repsAtMaxKg = 0, best1RM = 0, totalReps = 0;
           found.sets.forEach(s => {
-            const w = parseNum(s.kg);
-            const r = parseInt(s.reps) || 0;
+            const w = parseNum(s.kg), r = parseInt(s.reps) || 0;
             totalReps += r;
             const rm = calcOneRM(w, r);
             if (rm > best1RM) best1RM = rm;
-
-            if (w > maxKg || (w === maxKg && r > repsAtMaxKg)) {
-              maxKg = w;
-              repsAtMaxKg = r;
-            }
+            if (w > maxKg || (w === maxKg && r > repsAtMaxKg)) { maxKg = w; repsAtMaxKg = r; }
           });
-
           points.push({
-            dateShort,
+            dateShort: d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' }),
             fullDate: d.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' }),
-            maxKg,
-            repsAtMaxKg,
-            best1RM,
-            setsCount,
-            totalReps,
+            maxKg, repsAtMaxKg, best1RM, setsCount: found.sets.length, totalReps,
             setsDetail: found.sets.map(s => `${s.kg}kg×${s.reps}`).join(' • ')
           });
         }
       });
 
-      // Arricchisce ogni punto con la classificazione semaforo
-      points.forEach((p, idx) => {
-        const prev = idx > 0 ? points[idx - 1] : null;
-        p.analysis = classifyProgressionPoint(p, prev);
-      });
-
+      points.forEach((p, idx) => { p.analysis = classifyProgressionPoint(p, idx > 0 ? points[idx - 1] : null); });
       updateAnalyticsKPIs(points);
 
       const canvas = document.getElementById('strengthChart');
@@ -1842,12 +1204,8 @@
       const ctx = canvas.getContext('2d');
       if (strengthChartInstance) strengthChartInstance.destroy();
 
-      if (points.length === 0) {
-        strengthChartInstance = new Chart(ctx, {
-          type: 'line',
-          data: { labels: ['Nessun dato'], datasets: [{ data: [0] }] },
-          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-        });
+      if (!points.length) {
+        strengthChartInstance = new Chart(ctx, { type: 'line', data: { labels: ['Nessun dato'], datasets: [{ data: [0] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
         renderProgressionBreakdown([]);
         return;
       }
@@ -1856,78 +1214,50 @@
       const primaryLineData = points.map(p => chartMetricMode === 'kg' ? p.maxKg : p.best1RM);
       const repsBarData = points.map(p => p.repsAtMaxKg);
       const pointColors = points.map(p => p.analysis.color);
-
-      const minLineVal = Math.min(...primaryLineData);
-      const maxLineVal = Math.max(...primaryLineData);
+      const minLineVal = Math.min(...primaryLineData), maxLineVal = Math.max(...primaryLineData);
       const span = Math.max(5, maxLineVal - minLineVal);
 
-      // Sfondo sfumato sotto la linea principale
       const gradient = ctx.createLinearGradient(0, 0, 0, 230);
-      if (chartMetricMode === 'kg') {
-        gradient.addColorStop(0, 'rgba(59, 130, 246, 0.28)');
-        gradient.addColorStop(0.75, 'rgba(59, 130, 246, 0.0)');
-      } else {
-        gradient.addColorStop(0, 'rgba(99, 102, 241, 0.28)');
-        gradient.addColorStop(0.75, 'rgba(99, 102, 241, 0.0)');
-      }
+      gradient.addColorStop(0, chartMetricMode === 'kg' ? 'rgba(59, 130, 246, 0.28)' : 'rgba(99, 102, 241, 0.28)');
+      gradient.addColorStop(0.75, 'rgba(59, 130, 246, 0.0)');
 
-      // Plugin personalizzato che disegna le targhette "85kg × 6 (3s)" sopra ogni singolo pallino
       const directPointLabelsPlugin = {
         id: 'directPointLabels',
         afterDatasetsDraw(chart) {
           const { ctx } = chart;
           const meta = chart.getDatasetMeta(0);
           if (!meta || !meta.data) return;
-
           ctx.save();
           meta.data.forEach((element, index) => {
             const p = points[index];
             if (!p) return;
-
-            const x = element.x;
-            const y = element.y;
-
-            const topText = chartMetricMode === 'kg'
-              ? `${p.maxKg}kg × ${p.repsAtMaxKg}`
-              : `1RM ${p.best1RM}kg`;
-            const subText = chartMetricMode === 'kg'
-              ? `${p.setsCount} serie`
-              : `${p.maxKg}kg×${p.repsAtMaxKg} (${p.setsCount}s)`;
+            const topText = chartMetricMode === 'kg' ? `${p.maxKg}kg × ${p.repsAtMaxKg}` : `1RM ${p.best1RM}kg`;
+            const subText = chartMetricMode === 'kg' ? `${p.setsCount} serie` : `${p.maxKg}kg×${p.repsAtMaxKg} (${p.setsCount}s)`;
 
             ctx.font = 'bold 10px -apple-system, BlinkMacSystemFont, sans-serif';
             const w1 = ctx.measureText(topText).width;
             ctx.font = '600 9px -apple-system, BlinkMacSystemFont, sans-serif';
             const w2 = ctx.measureText(subText).width;
+            const boxW = Math.max(w1, w2) + 10, boxH = 26;
 
-            const boxW = Math.max(w1, w2) + 10;
-            const boxH = 26;
-
-            // Evita che l'etichetta esca dai bordi sinistro/destro o superiore del canvas
             const chartArea = chart.chartArea;
-            let drawX = x - boxW / 2;
+            let drawX = element.x - boxW / 2;
             if (drawX < chartArea.left + 2) drawX = chartArea.left + 2;
             if (drawX + boxW > chartArea.right - 2) drawX = chartArea.right - boxW - 2;
+            let drawY = element.y - boxH - 10;
+            if (drawY < chartArea.top + 2) drawY = element.y + 10;
 
-            let drawY = y - boxH - 10;
-            if (drawY < chartArea.top + 2) drawY = y + 10;
-
-            // Riquadro scuro con bordo del colore del semaforo
             ctx.fillStyle = 'rgba(9, 13, 22, 0.92)';
             ctx.strokeStyle = p.analysis.color;
             ctx.lineWidth = 1.2;
+            drawBoxCompatible(ctx, drawX, drawY, boxW, boxH, 6);
+            ctx.fill(); ctx.stroke();
 
-            ctx.beginPath();
-            ctx.roundRect(drawX, drawY, boxW, boxH, 6);
-            ctx.fill();
-            ctx.stroke();
-
-            // Testo principale (Kg x Reps)
             ctx.fillStyle = '#f8fafc';
             ctx.font = 'bold 10px -apple-system, BlinkMacSystemFont, sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText(topText, drawX + boxW / 2, drawY + 11);
 
-            // Sottotesto (N° serie)
             ctx.fillStyle = '#94a3b8';
             ctx.font = '600 9px -apple-system, BlinkMacSystemFont, sans-serif';
             ctx.fillText(subText, drawX + boxW / 2, drawY + 22);
@@ -1940,7 +1270,7 @@
         type: 'bar',
         plugins: [directPointLabelsPlugin],
         data: {
-          labels: labels,
+          labels,
           datasets: [
             {
               type: 'line',
@@ -1948,105 +1278,48 @@
               data: primaryLineData,
               borderColor: chartMetricMode === 'kg' ? '#3b82f6' : '#818cf8',
               backgroundColor: gradient,
-              fill: true,
-              borderWidth: 3,
-              pointBackgroundColor: pointColors,
-              pointBorderColor: '#090d16',
-              pointBorderWidth: 2,
-              pointRadius: 6,
-              pointHoverRadius: 8,
-              tension: 0.3,
-              yAxisID: 'yKg',
-              order: 1
+              fill: true, borderWidth: 3,
+              pointBackgroundColor: pointColors, pointBorderColor: '#090d16', pointBorderWidth: 2,
+              pointRadius: 6, pointHoverRadius: 8, tension: 0.3, yAxisID: 'yKg', order: 1
             },
             {
               type: 'bar',
               label: 'Ripetizioni sul Carico Max',
               data: repsBarData,
-              backgroundColor: points.map(p =>
-                p.analysis.status === 'tradeoff'
-                  ? 'rgba(245, 158, 11, 0.35)'
-                  : 'rgba(99, 102, 241, 0.28)'
-              ),
-              borderColor: points.map(p =>
-                p.analysis.status === 'tradeoff'
-                  ? 'rgba(245, 158, 11, 0.8)'
-                  : 'rgba(99, 102, 241, 0.65)'
-              ),
-              borderWidth: 1,
-              borderRadius: 5,
-              barPercentage: 0.45,
-              yAxisID: 'yReps',
-              order: 2
+              backgroundColor: points.map(p => p.analysis.status === 'tradeoff' ? 'rgba(245, 158, 11, 0.35)' : 'rgba(99, 102, 241, 0.28)'),
+              borderColor: points.map(p => p.analysis.status === 'tradeoff' ? 'rgba(245, 158, 11, 0.8)' : 'rgba(99, 102, 241, 0.65)'),
+              borderWidth: 1, borderRadius: 5, barPercentage: 0.45, yAxisID: 'yReps', order: 2
             }
           ]
         },
         options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          layout: {
-            padding: { top: 34, right: 8, left: 4, bottom: 0 }
-          },
-          interaction: {
-            mode: 'index',
-            intersect: false
-          },
+          responsive: true, maintainAspectRatio: false,
+          layout: { padding: { top: 34, right: 8, left: 4, bottom: 0 } },
+          interaction: { mode: 'index', intersect: false },
           plugins: {
             legend: { display: false },
             tooltip: {
-              backgroundColor: 'rgba(15, 23, 42, 0.96)',
-              titleColor: '#f8fafc',
-              bodyColor: '#cbd5e1',
-              borderColor: '#334155',
-              borderWidth: 1,
-              padding: 10,
+              backgroundColor: 'rgba(15, 23, 42, 0.96)', titleColor: '#f8fafc', bodyColor: '#cbd5e1', borderColor: '#334155', borderWidth: 1, padding: 10,
               callbacks: {
-                title: function(context) {
-                  const p = points[context[0].dataIndex];
-                  return p ? `${p.fullDate} —${p.analysis.label}` : '';
+                title: c => { const p = points[c[0].dataIndex]; return p ? `${p.fullDate} — ${p.analysis.label}` : ''; },
+                label: c => {
+                  const p = points[c.dataIndex]; if (!p) return '';
+                  return c.datasetIndex === 0 ? `Top Set: ${p.maxKg} kg × ${p.repsAtMaxKg} reps (1RM: ${p.best1RM} kg)` : `Volume: ${p.setsCount} serie (${p.totalReps} reps totali)`;
                 },
-                label: function(context) {
-                  const p = points[context.dataIndex];
-                  if (!p) return '';
-                  if (context.datasetIndex === 0) {
-                    return `Top Set: ${p.maxKg} kg × ${p.repsAtMaxKg} reps (1RM:${p.best1RM} kg)`;
-                  }
-                  return `Volume: ${p.setsCount} serie (${p.totalReps} reps totali)`;
-                },
-                afterBody: function(context) {
-                  const p = points[context[0].dataIndex];
-                  return p ? [`Tutte le serie: ${p.setsDetail}`] : [];
-                }
+                afterBody: c => { const p = points[c[0].dataIndex]; return p ? [`Tutte le serie: ${p.setsDetail}`] : []; }
               }
             }
           },
           scales: {
-            x: {
-              ticks: { color: '#94a3b8', font: { size: 11, weight: '600' } },
-              grid: { color: 'rgba(255,255,255,0.04)' }
-            },
-            // Asse sinistro per i Kg: posizionato nella metà medio-alta del grafico
+            x: { ticks: { color: '#94a3b8', font: { size: 11, weight: '600' } }, grid: { color: 'rgba(255,255,255,0.04)' } },
             yKg: {
-              type: 'linear',
-              position: 'left',
+              type: 'linear', position: 'left',
               min: Math.max(0, Math.floor(minLineVal - span * 0.45)),
               max: Math.ceil(maxLineVal + span * 0.35),
-              ticks: {
-                color: '#64748b',
-                font: { size: 10 },
-                callback: v => v + ' kg'
-              },
+              ticks: { color: '#64748b', font: { size: 10 }, callback: v => v + ' kg' },
               grid: { color: 'rgba(255,255,255,0.05)' }
             },
-            // Asse destro per le ripetizioni: confinato nel 25% inferiore del grafico (stile TradingView)
-            yReps: {
-              type: 'linear',
-              position: 'right',
-              min: 0,
-              max: Math.max(35, Math.max(...repsBarData) * 3.5),
-              display: false,
-              grid: { display: false }
-            }
+            yReps: { type: 'linear', position: 'right', min: 0, max: Math.max(35, Math.max(...repsBarData) * 3.5), display: false, grid: { display: false } }
           }
         }
       });
@@ -2055,189 +1328,101 @@
     }
 
     function updateAnalyticsKPIs(points) {
-      const maxKgEl = document.getElementById('kpiMaxKg');
-      const maxKgSubEl = document.getElementById('kpiMaxKgSub');
-      const lastSetEl = document.getElementById('kpiLastSet');
-      const lastSetSubEl = document.getElementById('kpiLastSetSub');
-      const trendBadgeEl = document.getElementById('kpiTrendBadge');
-      const trendSubEl = document.getElementById('kpiTrendSub');
-
-      if (points.length === 0) {
-        maxKgEl.textContent = '—';
-        maxKgSubEl.textContent = 'Nessun dato';
-        lastSetEl.textContent = '—';
-        lastSetSubEl.textContent = '—';
-        trendBadgeEl.textContent = '—';
-        trendBadgeEl.className = 'text-xs font-bold text-slate-400 mt-0.5';
-        trendSubEl.textContent = '—';
+      const maxKgEl = document.getElementById('kpiMaxKg'), maxKgSubEl = document.getElementById('kpiMaxKgSub');
+      const lastSetEl = document.getElementById('kpiLastSet'), lastSetSubEl = document.getElementById('kpiLastSetSub');
+      const trendBadgeEl = document.getElementById('kpiTrendBadge'), trendSubEl = document.getElementById('kpiTrendSub');
+      if (!points.length) {
+        maxKgEl.textContent = '—'; maxKgSubEl.textContent = 'Nessun dato';
+        lastSetEl.textContent = '—'; lastSetSubEl.textContent = '—';
+        trendBadgeEl.textContent = '—'; trendBadgeEl.className = 'text-xs font-bold text-slate-400 mt-0.5'; trendSubEl.textContent = '—';
         return;
       }
-
-      // Trova Record Carico
       let prPoint = points[0];
-      points.forEach(p => {
-        if (p.maxKg > prPoint.maxKg || (p.maxKg === prPoint.maxKg && p.repsAtMaxKg > prPoint.repsAtMaxKg)) {
-          prPoint = p;
-        }
-      });
-
+      points.forEach(p => { if (p.maxKg > prPoint.maxKg || (p.maxKg === prPoint.maxKg && p.repsAtMaxKg > prPoint.repsAtMaxKg)) prPoint = p; });
       const last = points[points.length - 1];
 
       maxKgEl.textContent = `${prPoint.maxKg} kg × ${prPoint.repsAtMaxKg}`;
       maxKgSubEl.textContent = `1RM: ${prPoint.best1RM} kg (${prPoint.dateShort})`;
-
       lastSetEl.textContent = `${last.maxKg} kg × ${last.repsAtMaxKg}`;
       lastSetSubEl.textContent = `${last.setsCount} serie • ${last.totalReps} reps`;
-
       trendBadgeEl.textContent = last.analysis.label;
-      if (last.analysis.status === 'progress') {
-        trendBadgeEl.className = 'text-xs font-bold text-emerald-400 mt-0.5';
-      } else if (last.analysis.status === 'tradeoff' || last.analysis.status === 'volume_shift') {
-        trendBadgeEl.className = 'text-xs font-bold text-amber-400 mt-0.5';
-      } else if (last.analysis.status === 'drop') {
-        trendBadgeEl.className = 'text-xs font-bold text-rose-400 mt-0.5';
-      } else {
-        trendBadgeEl.className = 'text-xs font-bold text-blue-400 mt-0.5';
-      }
+      trendBadgeEl.className = last.analysis.status === 'progress' ? 'text-xs font-bold text-emerald-400 mt-0.5' : (last.analysis.status === 'tradeoff' || last.analysis.status === 'volume_shift') ? 'text-xs font-bold text-amber-400 mt-0.5' : last.analysis.status === 'drop' ? 'text-xs font-bold text-rose-400 mt-0.5' : 'text-xs font-bold text-blue-400 mt-0.5';
       trendSubEl.textContent = points.length > 1 ? `vs ${points[points.length - 2].dateShort}` : '1ª sessione';
     }
 
     function renderProgressionBreakdown(points) {
       const container = document.getElementById('progressionBreakdownList');
       container.innerHTML = '';
-
-      if (points.length === 0) {
+      if (!points.length) {
         container.innerHTML = `<p class="text-xs text-slate-500 text-center py-3">Salva almeno un allenamento con questo esercizio per vedere il grafico e l'analisi.</p>`;
         return;
       }
-
       for (let i = points.length - 1; i >= 0; i--) {
-        const curr = points[i];
-        const prev = i > 0 ? points[i - 1] : null;
-
+        const curr = points[i], prev = i > 0 ? points[i - 1] : null;
         let badgesHtml = '';
         if (prev) {
           const diffKg = +(curr.maxKg - prev.maxKg).toFixed(1);
           const diffReps = curr.repsAtMaxKg - prev.repsAtMaxKg;
           const diffSets = curr.setsCount - prev.setsCount;
-
-          if (diffKg > 0) {
-            badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold">+${diffKg} kg ↑</span>`;
-          } else if (diffKg < 0) {
-            badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-400 border border-rose-500/30 text-[10px] font-bold">${diffKg} kg ↓</span>`;
-          } else {
-            badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 text-[10px] font-semibold">= kg</span>`;
-          }
-
-          if (diffReps > 0) {
-            badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold">+${diffReps} reps ↑</span>`;
-          } else if (diffReps < 0) {
-            badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[10px] font-bold">${diffReps} reps ↓</span>`;
-          } else {
-            badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 text-[10px] font-semibold">= reps</span>`;
-          }
-
-          if (diffSets > 0) {
-            badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold">+${diffSets} serie ↑</span>`;
-          } else if (diffSets < 0) {
-            badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[10px] font-bold">${diffSets} serie ↓</span>`;
-          }
+          badgesHtml += diffKg > 0 ? `<span class="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold">+${diffKg} kg ↑</span>` : diffKg < 0 ? `<span class="px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-400 border border-rose-500/30 text-[10px] font-bold">${diffKg} kg ↓</span>` : `<span class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 text-[10px] font-semibold">= kg</span>`;
+          badgesHtml += diffReps > 0 ? `<span class="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold">+${diffReps} reps ↑</span>` : diffReps < 0 ? `<span class="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[10px] font-bold">${diffReps} reps ↓</span>` : `<span class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 text-[10px] font-semibold">= reps</span>`;
+          if (diffSets > 0) badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold">+${diffSets} serie ↑</span>`;
+          else if (diffSets < 0) badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[10px] font-bold">${diffSets} serie ↓</span>`;
         } else {
           badgesHtml = `<span class="px-2 py-0.5 rounded bg-slate-800 text-slate-400 text-[10px]">1ª sessione</span>`;
         }
-
-        const borderAccent =
-          curr.analysis.status === 'tradeoff'
-            ? 'border-l-4 border-l-amber-400'
-            : curr.analysis.status === 'progress'
-            ? 'border-l-4 border-l-emerald-400'
-            : curr.analysis.status === 'drop'
-            ? 'border-l-4 border-l-rose-500'
-            : 'border-l-4 border-l-blue-500';
-
+        const borderAccent = curr.analysis.status === 'tradeoff' ? 'border-l-4 border-l-amber-400' : curr.analysis.status === 'progress' ? 'border-l-4 border-l-emerald-400' : curr.analysis.status === 'drop' ? 'border-l-4 border-l-rose-500' : 'border-l-4 border-l-blue-500';
         const item = document.createElement('div');
         item.className = `p-3.5 rounded-xl bg-slate-950/90 border border-slate-800/80 ${borderAccent} space-y-2`;
         item.innerHTML = `
           <div class="flex items-center justify-between gap-2">
-            <div>
-              <span class="text-[11px] font-semibold text-blue-400">${curr.fullDate}</span>
-              <span class="text-xs font-bold text-white ml-1.5">Top: ${curr.maxKg} kg × ${curr.repsAtMaxKg}</span>
-              <span class="text-[11px] text-slate-400 ml-1">(${curr.setsCount} serie • ${curr.totalReps} reps)</span>
-            </div>
+            <div><span class="text-[11px] font-semibold text-blue-400">${curr.fullDate}</span><span class="text-xs font-bold text-white ml-1.5">Top: ${curr.maxKg} kg × ${curr.repsAtMaxKg}</span><span class="text-[11px] text-slate-400 ml-1">(${curr.setsCount} serie • ${curr.totalReps} reps)</span></div>
             <div class="flex items-center gap-1 shrink-0">${badgesHtml}</div>
           </div>
-
-          <p class="text-[11px] text-slate-300 leading-snug bg-slate-900/90 px-2.5 py-1.5 rounded-lg border border-slate-800/60">
-            ${curr.analysis.verdict}
-          </p>
-
+          <p class="text-[11px] text-slate-300 leading-snug bg-slate-900/90 px-2.5 py-1.5 rounded-lg border border-slate-800/60">${curr.analysis.verdict}</p>
           <div class="flex items-center justify-between text-[11px] font-mono text-slate-400 pt-0.5">
             <span class="truncate">Serie: ${curr.setsDetail}</span>
             <span class="text-indigo-400 shrink-0 ml-2">1RM: ${curr.best1RM}kg</span>
-          </div>
-        `;
+          </div>`;
         container.appendChild(item);
       }
     }
 
-    // --- NAVIGAZIONE TABS ---
     function switchTab(tabName) {
       ['workout', 'history', 'analytics', 'settings'].forEach(t => {
         document.getElementById(`tab-${t}`).classList.add('hidden');
-        const navBtn = document.getElementById(`nav-${t}`);
-        navBtn.className = 'flex flex-col items-center justify-center gap-1 text-slate-400';
+        document.getElementById(`nav-${t}`).className = 'flex flex-col items-center justify-center gap-1 text-slate-400';
       });
-
       document.getElementById(`tab-${tabName}`).classList.remove('hidden');
       document.getElementById(`nav-${tabName}`).className = 'flex flex-col items-center justify-center gap-1 text-blue-400';
-
       if (tabName === 'history') renderHistory();
-      if (tabName === 'analytics') {
-        populateAnalyticsSelect();
-        renderAnalyticsCharts();
-      }
+      if (tabName === 'analytics') { populateAnalyticsSelect(); renderAnalyticsCharts(); }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // --- ESPORTAZIONE / IMPORTAZIONE ---
     function exportCSV() {
-      if (state.history.length === 0) {
-        showToast('Nessuna sessione da esportare', true);
-        return;
-      }
-      let csv = 'Data,Ora_Inizio,Ora_Fine,Scheda,Esercizio,Gruppo,Serie,Kg,Ripetizioni,1RM_Stimato\n';
+      if (!state.history.length) { showToast('Nessuna sessione da esportare', true); return; }
+      const nl = String.fromCharCode(10);
+      let csv = 'Data,Ora_Inizio,Ora_Fine,Scheda,Esercizio,Gruppo,Serie,Kg,Ripetizioni,1RM_Stimato' + nl;
       state.history.forEach(sess => {
         const d = new Date(sess.date).toLocaleDateString('it-IT');
-        const st = sess.startTime || '';
-        const et = sess.endTime || '';
         (sess.exercises || []).forEach(ex => {
           const meta = getExerciseMeta(ex.exId);
           (ex.sets || []).forEach((s, idx) => {
-            const rm = calcOneRM(s.kg, s.reps);
-            csv += `"${d}","${st}","${et}","${sess.routineName}","${meta.name}","${meta.muscle}",${idx + 1},${s.kg},${s.reps},${rm}\n`;
+            csv += `"${d}","${sess.startTime || ''}","${sess.endTime || ''}","${sess.routineName}","${meta.name}","${meta.muscle}",${idx + 1},${s.kg},${s.reps},${calcOneRM(s.kg, s.reps)}` + nl;
           });
         });
       });
-
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
+      a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
       a.download = `ironos_workouts_${new Date().toISOString().slice(0, 10)}.csv`;
       a.click();
     }
 
     function exportJSON() {
-      const backup = {
-        exercises: state.exercises,
-        routines: state.routines,
-        history: state.history,
-        routineDrafts: state.routineDrafts
-      };
-      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
+      const backup = { exercises: state.exercises, routines: state.routines, history: state.history, routineDrafts: state.routineDrafts };
       const a = document.createElement('a');
-      a.href = url;
+      a.href = URL.createObjectURL(new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' }));
       a.download = `ironos_backup_${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
     }
@@ -2256,37 +1441,24 @@
           saveAllData();
           loadRoutineIntoActiveWorkout(state.routines[0].id, true, false);
           showToast('Backup ripristinato con successo!');
-        } catch (err) {
-          showToast('File JSON non valido', true);
-        }
+        } catch (err) { showToast('File JSON non valido', true); }
       };
       reader.readAsText(file);
     }
 
     function askFactoryReset() {
-      openCustomConfirm(
-        'Ripristina Dati',
-        'Questo cancellerà tutte le schede personalizzate e lo storico allenamenti. Continuare?',
-        () => {
-          localStorage.clear();
-          location.reload();
-        },
-        'Cancella Tutto',
-        true
-      );
+      openCustomConfirm('Ripristina Dati', 'Questo cancellerà tutte le schede personalizzate e lo storico allenamenti. Continuare?', () => {
+        localStorage.clear(); location.reload();
+      }, 'Cancella Tutto', true);
     }
 
     function showToast(msg, isWarning = false) {
       const toast = document.getElementById('toastNotification');
       const box = document.getElementById('toastBox');
       document.getElementById('toastMessage').textContent = msg;
-      box.className = isWarning
-        ? 'bg-rose-600 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-xl flex items-center gap-2'
-        : 'bg-emerald-600 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-xl flex items-center gap-2';
+      box.className = isWarning ? 'bg-rose-600 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-xl flex items-center gap-2' : 'bg-emerald-600 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-xl flex items-center gap-2';
       toast.classList.remove('opacity-0');
-      setTimeout(() => {
-        toast.classList.add('opacity-0');
-      }, 2600);
+      setTimeout(() => toast.classList.add('opacity-0'), 2600);
     }
   </script>
 </body>
